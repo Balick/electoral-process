@@ -1,6 +1,5 @@
-"use client"
+"use client";
 
-// context/SessionContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 
 const SessionContext = createContext();
@@ -11,39 +10,66 @@ export const SessionProvider = ({ children }) => {
   const [sessionEnded, setSessionEnded] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState(null);
   const [sessionResumeCount, setSessionResumeCount] = useState(0);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  const updateLocalStorage = () => {
+    localStorage.setItem(
+      "vote-session",
+      JSON.stringify({
+        session,
+        time,
+        sessionEnded,
+        sessionStartTime,
+        sessionResumeCount,
+        remainingTime,
+      })
+    );
+  };
 
   useEffect(() => {
-    const storedSession = localStorage.getItem("session");
+    const storedSession = localStorage.getItem("vote-session");
     if (storedSession) {
-      const { session, time, sessionEnded, sessionStartTime, sessionResumeCount } = JSON.parse(storedSession);
+      console.log(JSON.parse(storedSession));
+      // Récupérer l'état de session
+      const {
+        session,
+        time,
+        sessionEnded,
+        sessionStartTime,
+        sessionResumeCount,
+        remainingTime,
+      } = JSON.parse(storedSession);
+
+      // Définir l'état de session
       setSession(session);
       setTime(time);
       setSessionEnded(sessionEnded);
       setSessionStartTime(sessionStartTime);
       setSessionResumeCount(sessionResumeCount);
+      setRemainingTime(remainingTime);
     }
   }, []);
 
   useEffect(() => {
     if (session) {
-      const endTime = sessionStartTime + 24 * 60 * 60 * 1000; // 24 heures en millisecondes
+      const endTime = sessionStartTime + remainingTime;
       setTime(endTime);
 
       const interval = setInterval(() => {
-        const remainingTime = endTime - Date.now();
-        if (remainingTime <= 0) {
+        const remaining = endTime - Date.now();
+        if (remaining <= 0) {
           clearInterval(interval);
           setSession(false);
           setSessionEnded(true);
           setTime(0);
         } else {
-          setTime(remainingTime);
+          setTime(remaining);
         }
       }, 1000);
 
       return () => clearInterval(interval);
     }
-  }, [session, sessionStartTime]);
+  }, [session, sessionStartTime, remainingTime]);
 
   const startSession = () => {
     const now = Date.now();
@@ -51,30 +77,56 @@ export const SessionProvider = ({ children }) => {
     setSessionStartTime(now);
     setSessionEnded(false);
     setSessionResumeCount(sessionResumeCount + 1);
+    setRemainingTime(1 * 60 * 60 * 1000); // 24 heures en millisecondes
+    updateLocalStorage();
   };
 
   const pauseSession = () => {
     setSession(false);
+    setRemainingTime(time);
+    updateLocalStorage();
   };
 
   const resumeSession = () => {
     setSession(true);
     setSessionEnded(false);
     setSessionResumeCount(sessionResumeCount + 1);
+    updateLocalStorage();
   };
 
   useEffect(() => {
-    localStorage.setItem("session", JSON.stringify({
-      session,
-      time,
-      sessionEnded,
-      sessionStartTime,
-      sessionResumeCount,
-    }));
-  }, [session, time, sessionEnded, sessionStartTime, sessionResumeCount]);
+    localStorage.setItem(
+      "vote-session",
+      JSON.stringify({
+        session,
+        time,
+        sessionEnded,
+        sessionStartTime,
+        sessionResumeCount,
+        remainingTime,
+      })
+    );
+  }, [
+    session,
+    time,
+    sessionEnded,
+    sessionStartTime,
+    sessionResumeCount,
+    remainingTime,
+  ]);
 
   return (
-    <SessionContext.Provider value={{ session, time, sessionEnded, startSession, pauseSession, resumeSession }}>
+    <SessionContext.Provider
+      value={{
+        session,
+        time,
+        sessionEnded,
+        startSession,
+        pauseSession,
+        resumeSession,
+        remainingTime
+      }}
+    >
       {children}
     </SessionContext.Provider>
   );
