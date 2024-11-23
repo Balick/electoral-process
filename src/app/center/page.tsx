@@ -6,9 +6,10 @@ import Navigation from "@/components/navigation";
 import React from "react";
 import { signOut } from "@/lib/actions";
 import { connectManager } from "@/lib/supabase/utils";
+import Link from "next/link";
 
 export default async function Home() {
-  const user = await connectManager();
+  await connectManager();
 
   const localisation = {
     province: "Haut Katanga",
@@ -67,8 +68,15 @@ export default async function Home() {
             />
           </div>
 
-          <div className="pt-20 px-8 flex items-center justify-center lg:basis-1/2">
+          <div className="pt-20 px-8 flex flex-col items-center justify-center lg:basis-1/2">
             <InteractiveButtons />
+            <Link
+              href="/center/votes/success"
+              target="_blank"
+              className="w-full text-lg text-center mt-2 underline"
+            >
+              Voir les votes en temps réel
+            </Link>
           </div>
         </div>
       </div>
