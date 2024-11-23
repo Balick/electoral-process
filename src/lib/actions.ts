@@ -1,33 +1,68 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function login(formData: FormData) {
-  const supabase = createClient();
-  const target = formData.get("target") as string;
+type LoginData = {
+  email: string;
+  password: string;
+  target: string;
+};
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-  };
+// login function to log in user
+export async function login({ email, password, target }: LoginData) {
+  const supabase = createClient();
+  const data = { email, password };
+  let errorMessage = "Erreur lors de la connexion.";
 
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
     console.error(error.message);
-    //redirect("/error");
-    return;
+
+    if (error.message === "Invalid login credentials")
+      errorMessage = "Vos identifiants sont incorrects.";
+
+    return errorMessage;
   }
 
-  revalidatePath(`/${target}/signin`, "page");
+  // verify if user is a manager or an admin
+  const { data: user } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  // if user is a manager and target is admin, return error message
+  if (user.role === "manager" && target === "admin") {
+    await signOut();
+    errorMessage = "Vos identifiants sont incorrects.";
+    return errorMessage;
+  }
+
+  // if user is an admin and target is center, return error message
+  else if (user.role === "admin" && target === "center") {
+    await signOut();
+    errorMessage = "Vos identifiants sont incorrects.";
+    return errorMessage;
+  }
+
+  // else, redirect to target page
   redirect(`/${target}`);
 }
 
+// signOut function to log out user
+export async function signOut() {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.log(`❌  [SignOut Error] ${error.message}`);
+  }
+}
+
+/*
 export async function signup(formData: FormData) {
   const supabase = createClient();
 
@@ -79,12 +114,4 @@ export async function signup(formData: FormData) {
 
   revalidatePath("/center/signin", "page");
 }
-
-export async function signOut() {
-  const supabase = createClient();
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    console.log(`❌  [SignOut Error] ${error.message}`);
-  }
-}
+*/
