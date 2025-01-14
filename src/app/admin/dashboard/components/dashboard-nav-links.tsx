@@ -23,10 +23,10 @@ export default function DashboardNavLinks() {
   const pathname = usePathname();
   return (
     <ul className="hidden lg:flex items-center justify-between font-medium gap-4">
-      {dashboardLinks.map(({ label, href }) => {
+      {dashboardLinks.map(({ label, href }, idx) => {
         const isActiveLink = pathname.endsWith(href);
         return (
-          <li>
+          <li key={idx}>
             <Link href={href} className={cn(isActiveLink && "font-semibold")}>
               {label}
             </Link>

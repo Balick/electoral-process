@@ -1,8 +1,8 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/actions";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 // connectManager function to connect the user to the manager role
 export async function connectManager() {

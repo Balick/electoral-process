@@ -85,7 +85,7 @@ export default function CandidateList() {
                       {image && (
                         <Image
                           src={image.image}
-                          alt={candidate.name}
+                          alt={candidate.nom}
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -89,3 +89,32 @@ export async function resetSession() {
 
   console.log("End session : ", data.end_session);
 }
+
+export async function getTime() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.from("duree").select("fin").single();
+
+  if (error) {
+    console.error("Error while selecting end time : ", error.message);
+    return;
+  }
+
+  return data.fin;
+}
+
+export async function getEndSession() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("duree")
+    .select("fin_session")
+    .single();
+
+  if (error) {
+    console.error("Error while selecting end time : ", error.message);
+    return;
+  }
+
+  return data.fin_session;
+}

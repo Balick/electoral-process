@@ -1,45 +1,57 @@
 "use client";
-
-import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { updateEndSession } from "@/lib/supabase/utils";
+//import { updateEndSession } from "@/lib/supabase/utils";
+import { isThereAnError } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
 
 export default function Timer() {
   const supabase = createClient();
-  const [timePassed, setTimePassed] = useState(false);
-  const [timePassedNumber, setTimePassedNumber] = useState(0);
+  const [sessionEnded, setSessionEnded] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
-  const [sessionEnded, setSessionEnded] = useState(false);
   const endTimeRef = useRef<Date | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout>();
+
+  const calculateTimeLeft = () => {
+    if (!endTimeRef.current) return;
+
+    const now = new Date().getTime();
+    const difference = endTimeRef.current.getTime() - now;
+
+    if (difference <= 0) {
+      setSessionEnded(true);
+      clearInterval(intervalRef.current);
+      setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+
+      if (!sessionEnded) {
+        //updateEndSession(1); // Use the correct session ID if available
+      }
+    } else {
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      setTimeLeft({ hours, minutes, seconds });
+    }
+  };
 
   useEffect(() => {
     const fetchEndTime = async () => {
-      const supabase = createClient();
       const { data, error } = await supabase.from("duree").select("*").single();
 
-      if (error) {
-        console.error("Error fetching end time: ", error.message);
-        return;
-      }
-
-      const endTime = new Date(data.fin);
-      endTimeRef.current = endTime;
-      updateTimer();
-
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      intervalRef.current = setInterval(updateTimer, 1000);
+      if (isThereAnError(error, "Error fetching end time: ")) return;
+      endTimeRef.current = new Date(data.fin);
 
       if (data.end_session) {
         setSessionEnded(true);
-        if (!data.end_session) {
-          await updateEndSession(data.id);
-        }
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+        return;
       }
+
+      calculateTimeLeft();
+      intervalRef.current = setInterval(calculateTimeLeft, 1000);
     };
 
     fetchEndTime();
@@ -48,67 +60,42 @@ export default function Timer() {
       .channel("public:duree")
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "duree",
-        },
+        { event: "UPDATE", schema: "public", table: "duree" },
         (payload) => {
-          const newEndTime = new Date(payload.new.fin);
-          endTimeRef.current = newEndTime;
-          updateTimer();
+          console.log("Realtime payload received:", payload);
+          endTimeRef.current = new Date(payload.new.fin);
 
-          // Arrêter l'intervalle existant et en démarrer un nouveau
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          intervalRef.current = setInterval(updateTimer, 1000);
+          if (!payload.new.end_session) {
+            setSessionEnded(false);
+            clearInterval(intervalRef.current);
+            calculateTimeLeft();
+            intervalRef.current = setInterval(calculateTimeLeft, 1000);
+          } else {
+            setSessionEnded(true);
+            clearInterval(intervalRef.current);
+            setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Subscription status:", status);
+      });
 
     return () => {
-      channel.unsubscribe();
+      channel.unsubscribe().then((r) => console.log(r));
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [supabase]);
+  }, []);
 
-  const updateTimer = async () => {
-    if (!endTimeRef.current) return;
-
-    const now = new Date();
-    const diff = endTimeRef.current.getTime() - now.getTime();
-
-    if (diff > 0) {
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeLeft({ hours, minutes, seconds });
-      setSessionEnded(false);
-    } else {
-      setTimePassed(true);
-      setTimePassedNumber((prev) => prev + 1);
-      setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
-      setSessionEnded(true);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (timePassedNumber === 1) {
-        await updateEndSession(1);
-      }
-    }
-  };
-
-  const formatTime = (time: number) => (time < 10 ? `0${time}` : time);
+  const formatTime = (time: number) => String(time).padStart(2, "0");
 
   return (
-    <>
-      {sessionEnded ? (
-        <span>00h:00m:00s</span>
-      ) : (
-        <>
-          {formatTime(timeLeft.hours)}h:{formatTime(timeLeft.minutes)}m:
-          {formatTime(timeLeft.seconds)}s
-        </>
-      )}
-    </>
+    <span>
+      {sessionEnded
+        ? "00h:00m:00s"
+        : `${formatTime(timeLeft.hours)}h:${formatTime(
+            timeLeft.minutes
+          )}m:${formatTime(timeLeft.seconds)}s`}
+    </span>
   );
 }
