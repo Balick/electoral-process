@@ -1,9 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,95 +15,59 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateEndTime } from "@/lib/supabase/utils";
-import { LoaderCircleIcon } from "lucide-react";
-import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoaderCircleIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  DEFAULT_DURATION,
+  Duration,
+  TIME_OPTIONS,
+} from "../constants/time-options";
+import { useSessionTimer } from "../hooks/useSessionTimer";
 
+// Schéma de validation du formulaire
 const FormSchema = z.object({
   during: z.string(),
 });
 
+// Type dérivé du schéma pour le typage des valeurs du formulaire
+type FormValues = z.infer<typeof FormSchema>;
+
 export function DateTimeForm() {
+  // Initialisation du client Supabase
   const supabase = createClient();
-  const [sessionHasEnded, setSessionHasEnded] = useState(false);
+  // Hook personnalisé pour gérer l'état du timer
+  const { timerRunning, setTimerRunning } = useSessionTimer();
 
-  useEffect(() => {
-    const checkSessionStatus = async () => {
-      const { data, error } = await supabase
-        .from("duree")
-        .select("end_session, fin")
-        .single();
-
-      if (error) {
-        console.error(
-          "Erreur lors de la récupération du statut de la session:",
-          error
-        );
-      } else {
-        const endTime = new Date(data.fin);
-        // @ts-ignore
-        setSessionHasEnded(endTime - new Date() < 0);
-      }
-    };
-
-    checkSessionStatus();
-
-    const channel = supabase
-      .channel("public:duree")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "duree",
-        },
-        (payload) => {
-          const endTime = new Date(payload.new.end);
-          setSessionHasEnded(endTime < new Date());
-        }
-      )
-      .subscribe();
-
-    // Vérifier toutes les minutes si la session a expiré
-    const intervalId = setInterval(() => {
-      checkSessionStatus();
-    }, 60000);
-
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(intervalId);
-    };
-  }, [supabase]);
-
-  const form = useForm<z.infer<typeof FormSchema>>({
+  // Configuration du formulaire avec React Hook Form
+  const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      during: "15min",
+      during: DEFAULT_DURATION,
     },
   });
 
-  const calculateEndTime = (duration: string) => {
-    const now = new Date();
-    let timeInMs;
+  /**
+   * Gère la soumission du formulaire
+   * Met à jour la durée de la session dans la base de données
+   */
+  const onSubmit = async (data: FormValues) => {
+    try {
+      // Calcule la date de fin basée sur la durée sélectionnée
+      const endTime = calculateEndTime(data.during as Duration);
+      // Met à jour la base de données avec la nouvelle durée
+      const { error } = await supabase
+        .from("duree")
+        .update({ fin: endTime, end_session: false })
+        .eq("id", 1);
 
-    if (duration.includes("min")) {
-      const minutes = parseInt(duration.replace("min", ""));
-      timeInMs = minutes * 60 * 1000;
-    } else if (duration.includes("h")) {
-      const hours = parseInt(duration.replace("h", ""));
-      timeInMs = hours * 60 * 60 * 1000;
+      if (error) throw error;
+      setTimerRunning(true);
+    } catch (error) {
+      console.error("Error:", error);
     }
-
-    // @ts-ignore
-    const endTime = new Date(now.getTime() + timeInMs);
-    return endTime.toISOString();
-  };
-
-  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    const endTime = calculateEndTime(data.during);
-    await updateEndTime(endTime);
-    setSessionHasEnded(false);
   };
 
   return (
@@ -116,6 +76,7 @@ export function DateTimeForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex gap-2 items-center"
       >
+        {/* Champ de sélection de la durée */}
         <FormField
           control={form.control}
           name="during"
@@ -128,11 +89,11 @@ export function DateTimeForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="15min">15 minutes</SelectItem>
-                  <SelectItem value="24h">24 heures</SelectItem>
-                  <SelectItem value="10min">10 minutes</SelectItem>
-                  <SelectItem value="5min">5 minutes</SelectItem>
-                  <SelectItem value="1min">1 minutes</SelectItem>
+                  {TIME_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -140,9 +101,10 @@ export function DateTimeForm() {
           )}
         />
 
+        {/* Bouton de soumission */}
         <Button
           type="submit"
-          disabled={form.formState.isSubmitting}
+          disabled={form.formState.isSubmitting || timerRunning}
           className="bg-cred hover:bg-cred/70 transition-all duration-300 font-semibold px-8 text-nowrap w-max py-2 rounded-lg"
         >
           {form.formState.isSubmitting && (
@@ -153,4 +115,18 @@ export function DateTimeForm() {
       </form>
     </Form>
   );
+}
+
+/**
+ * Calcule la date de fin de session basée sur la durée sélectionnée
+ * @param duration - Durée sélectionnée (format: "Xmin" ou "Xh")
+ * @returns Date ISO string de fin de session
+ */
+function calculateEndTime(duration: Duration): string {
+  const now = new Date();
+  const timeInMs = duration.includes("min")
+    ? parseInt(duration) * 60 * 1000 // Conversion minutes en millisecondes
+    : parseInt(duration) * 60 * 60 * 1000; // Conversion heures en millisecondes
+
+  return new Date(now.getTime() + timeInMs).toISOString();
 }
