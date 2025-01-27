@@ -1,101 +1,104 @@
 "use client";
+
 import { createClient } from "@/lib/supabase/client";
-//import { updateEndSession } from "@/lib/supabase/utils";
-import { isThereAnError } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { calculateTimeLeft, formatTime } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export default function Timer() {
   const supabase = createClient();
-  const [sessionEnded, setSessionEnded] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
     minutes: 0,
     seconds: 0,
   });
-  const endTimeRef = useRef<Date | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout>();
-
-  const calculateTimeLeft = () => {
-    if (!endTimeRef.current) return;
-
-    const now = new Date().getTime();
-    const difference = endTimeRef.current.getTime() - now;
-
-    if (difference <= 0) {
-      setSessionEnded(true);
-      clearInterval(intervalRef.current);
-      setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
-
-      if (!sessionEnded) {
-        //updateEndSession(1); // Use the correct session ID if available
-      }
-    } else {
-      const hours = Math.floor(difference / (1000 * 60 * 60));
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-      setTimeLeft({ hours, minutes, seconds });
-    }
-  };
+  //const [endSession, setEndSession] = useState(false);
 
   useEffect(() => {
-    const fetchEndTime = async () => {
-      const { data, error } = await supabase.from("duree").select("*").single();
+    let interval: NodeJS.Timeout;
 
-      if (isThereAnError(error, "Error fetching end time: ")) return;
-      endTimeRef.current = new Date(data.fin);
+    const fetchData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("duree")
+          .select("id, fin, end_session")
+          .eq("id", 1)
+          .single();
 
-      if (data.end_session) {
-        setSessionEnded(true);
-        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
+        if (error || !data) {
+          console.error("Erreur lors de la récupération des données :", error);
+          return;
+        }
 
-      calculateTimeLeft();
-      intervalRef.current = setInterval(calculateTimeLeft, 1000);
-    };
+        //setEndSession(data.end_session);
 
-    fetchEndTime();
+        const endDate = new Date(data.fin);
+        const now = new Date();
 
-    const channel = supabase
-      .channel("public:duree")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "duree" },
-        (payload) => {
-          console.log("Realtime payload received:", payload);
-          endTimeRef.current = new Date(payload.new.fin);
+        const updateTimeLeft = () => {
+          const timeRemaining = calculateTimeLeft(endDate);
+          setTimeLeft(timeRemaining);
 
-          if (!payload.new.end_session) {
-            setSessionEnded(false);
-            clearInterval(intervalRef.current);
-            calculateTimeLeft();
-            intervalRef.current = setInterval(calculateTimeLeft, 1000);
-          } else {
-            setSessionEnded(true);
-            clearInterval(intervalRef.current);
-            setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+          if (
+            timeRemaining.hours === 0 &&
+            timeRemaining.minutes === 0 &&
+            timeRemaining.seconds === 0
+          ) {
+            clearInterval(interval);
+            if (!data.end_session) {
+              updateEndSession(data.id);
+            }
+          }
+        };
+
+        updateTimeLeft();
+
+        if (now < endDate) {
+          interval = setInterval(updateTimeLeft, 1000);
+        } else {
+          if (!data.end_session) {
+            updateEndSession(data.id);
           }
         }
+      } catch (error) {
+        console.error("Erreur dans fetchData :", error);
+      }
+    };
+
+    const updateEndSession = async (id: string) => {
+      await supabase.from("duree").update({ end_session: true }).eq("id", id);
+      //setEndSession(true);
+    };
+
+    fetchData();
+
+    const channel = supabase
+      .channel("public:duree:id=eq.1")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "duree",
+          filter: "id=eq.1",
+        },
+        (payload) => {
+          console.log("new data: ", payload.new);
+          fetchData();
+        }
       )
-      .subscribe((status) => {
-        console.log("Subscription status:", status);
-      });
+      .subscribe();
 
     return () => {
-      channel.unsubscribe().then((r) => console.log(r));
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      clearInterval(interval);
+      supabase.removeChannel(channel);
     };
-  }, []);
-
-  const formatTime = (time: number) => String(time).padStart(2, "0");
+  });
 
   return (
-    <span>
-      {sessionEnded
-        ? "00h:00m:00s"
-        : `${formatTime(timeLeft.hours)}h:${formatTime(
-            timeLeft.minutes
-          )}m:${formatTime(timeLeft.seconds)}s`}
+    <span className="font-semibold text-3xl block">
+      {`${formatTime(timeLeft.hours)}h:${formatTime(
+        timeLeft.minutes
+      )}m:${formatTime(timeLeft.seconds)}s`}
     </span>
   );
 }
