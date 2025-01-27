@@ -1,10 +1,10 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { calculateTimeLeft, formatTime } from "@/lib/utils";
+import { calculateTimeLeft, cn, formatTime } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-export default function Timer() {
+export default function Timer({ className }: { className?: string }) {
   const supabase = createClient();
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
@@ -81,8 +81,7 @@ export default function Timer() {
           table: "duree",
           filter: "id=eq.1",
         },
-        (payload) => {
-          console.log("new duration: ", payload.new.fin);
+        () => {
           fetchData();
         }
       )
@@ -95,7 +94,7 @@ export default function Timer() {
   }, []);
 
   return (
-    <span className="font-semibold text-3xl block">
+    <span className={cn("font-semibold text-3xl block", className)}>
       {`${formatTime(timeLeft.hours)}h:${formatTime(
         timeLeft.minutes
       )}m:${formatTime(timeLeft.seconds)}s`}

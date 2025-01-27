@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import Timer from "@/app/admin/dashboard/components/timer";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function InteractiveButtons() {
   const [disabled, setIsDisabled] = useState(false);
@@ -39,7 +39,6 @@ export default function InteractiveButtons() {
           table: "duree",
         },
         (payload) => {
-          console.log(payload.new);
           setIsDisabled(payload.new.end_session);
         }
       )
@@ -48,7 +47,7 @@ export default function InteractiveButtons() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [disabled]);
 
   return (
     <ul className="flex flex-col items-center justify-center w-full gap-2">
@@ -64,7 +63,7 @@ export default function InteractiveButtons() {
         </p>
       </li>
       <li className="w-full">
-        <Button disabled={disabled} className="w-full h-auto p-0">
+        <Button disabled={false /*disabled*/} className="w-full h-auto p-0">
           <Link
             href={"/center/identification"}
             className="w-full rounded py-4 uppercase font-semibold bg-cblue-light hover:bg-cblue active:bg-cblue active:scale-105 text-lg transition-all duration-300"

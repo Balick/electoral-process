@@ -1,12 +1,11 @@
-import Image from "next/image";
-import { Play } from "lucide-react";
-import ceniLogo from "../../../public/ceni-logo.png";
 import InteractiveButtons from "@/components/manager-ui/interactive-buttons";
 import Navigation from "@/components/navigation";
-import React from "react";
 import { signOut } from "@/lib/actions";
 import { connectManager } from "@/lib/supabase/utils";
+import { Play } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import ceniLogo from "../../../public/ceni-logo.png";
 
 export default async function Home() {
   await connectManager();
@@ -71,7 +70,7 @@ export default async function Home() {
           <div className="pt-20 px-8 flex flex-col items-center justify-center lg:basis-1/2">
             <InteractiveButtons />
             <Link
-              href="/center/votes/success"
+              href="/result"
               target="_blank"
               className="w-full text-lg text-center mt-2 underline"
             >

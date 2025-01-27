@@ -2,21 +2,51 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-// getVoterById function to get a voter by id
-// params: id (string) is the id of the voter
+// Fonction getVoterById pour obtenir un électeur ou un candidat par identifiant
+// Paramètre : id (string) est l'identifiant de l'électeur ou du candidat
 export async function getVoterById(id: string) {
   const supabase = createClient();
-  const { data, error } = await supabase
+
+  // Premièrement, tenter de récupérer l'électeur dans la table 'electeurs'
+  const { data: electeurData, error: electeurError } = await supabase
     .from("electeurs")
     .select("*")
     .eq("identifiant", id);
 
-  if (error) {
-    console.error("Error fetching voter: ", error.message);
+  if (electeurError) {
+    console.error(
+      "Erreur lors de la récupération de l'électeur :",
+      electeurError.message
+    );
     return [];
   }
 
-  return data;
+  if (electeurData && electeurData.length > 0) {
+    // Électeur trouvé dans la table 'electeurs'
+    return electeurData;
+  } else {
+    // Aucun électeur trouvé, vérifier dans la table 'candidates'
+    const { data: candidateData, error: candidateError } = await supabase
+      .from("candidates")
+      .select("*")
+      .eq("identifiant", id);
+
+    if (candidateError) {
+      console.error(
+        "Erreur lors de la récupération du candidat :",
+        candidateError.message
+      );
+      return [];
+    }
+
+    if (candidateData && candidateData.length > 0) {
+      // Candidat trouvé dans la table 'candidates'
+      return candidateData;
+    } else {
+      // Aucun enregistrement trouvé dans les deux tables
+      return [];
+    }
+  }
 }
 
 // blankVote function to update a blank vote
@@ -41,7 +71,7 @@ export async function blankVote(id: string) {
 export async function vote(
   id_candidate: string,
   id_centre: string,
-  id_elector: string,
+  id_elector: string
 ) {
   const supabase = createClient();
   // get the total_votes column from the centers table
@@ -80,7 +110,7 @@ export async function vote(
   if (errorUpdateCenter) {
     console.error(
       "❌  Error while updating center: ",
-      errorUpdateCenter.message,
+      errorUpdateCenter.message
     );
     return false;
   }
@@ -95,7 +125,7 @@ export async function vote(
   if (errorUpdateCandidate) {
     console.error(
       "❌  Error fetching candidate: ",
-      errorUpdateCandidate.message,
+      errorUpdateCandidate.message
     );
     return false;
   }
@@ -109,7 +139,7 @@ export async function vote(
   if (errorUpdateCandidateVotes) {
     console.error(
       "❌  Error updating candidate votes: ",
-      errorUpdateCandidateVotes.message,
+      errorUpdateCandidateVotes.message
     );
     return false;
   }

@@ -3,6 +3,7 @@ import { connectAdmin } from "@/lib/supabase/utils";
 import { Hourglass } from "lucide-react";
 import LogOut from "./components/log-out";
 import Timer from "./components/timer";
+import TotalVoters from "./components/total-voters";
 
 export default async function Page() {
   // Verify if connected user is admin
@@ -24,11 +25,11 @@ export default async function Page() {
       </div>
 
       <div className="flex justify-between gap-8 mt-4 flex-wrap md:flex-nowrap">
-        {/*<div className="hidden">
+        <div>
           <TotalVoters />
-          <VotingCenters />
-          <WhiteVotes />
-        </div>*/}
+          {/*<VotingCenters />
+          <WhiteVotes />*/}
+        </div>
         <div className="w-full border border-black rounded-lg p-4 ">
           <div className="flex justify-between items-center gap-2">
             <span className="text-nowrap">Temps restant</span>

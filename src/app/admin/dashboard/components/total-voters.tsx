@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function TotalVoters() {
   const supabase = createClient();
@@ -47,7 +47,7 @@ export default function TotalVoters() {
 
     fetchVotersData();
 
-    supabase
+    const channel1 = supabase
       .channel("public:candidates")
       .on(
         "postgres_changes",
@@ -56,13 +56,13 @@ export default function TotalVoters() {
           schema: "public",
           table: "candidates",
         },
-        (payload) => {
+        () => {
           fetchVotersData();
         }
       )
       .subscribe();
 
-    supabase
+    const channel2 = supabase
       .channel("public:electeurs")
       .on(
         "postgres_changes",
@@ -71,14 +71,15 @@ export default function TotalVoters() {
           schema: "public",
           table: "electeurs",
         },
-        (payload) => {
+        () => {
           fetchVotersData();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeAllChannels();
+      supabase.removeChannel(channel1);
+      supabase.removeChannel(channel2);
     };
   }, [supabase]);
 

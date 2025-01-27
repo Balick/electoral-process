@@ -1,13 +1,16 @@
-import Image from "next/image";
+"use client";
+
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Candidate, images } from "@/constants";
-import ConfirmButton from "./confirm-button";
+import { useSearchCandidate } from "@/context/search-candidate-provider";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import Image from "next/image";
+import ConfirmButton from "./confirm-button";
 
 export default function CandidateCard({
   data,
@@ -16,9 +19,10 @@ export default function CandidateCard({
   data: Candidate;
   elector: any[];
 }) {
+  const { term } = useSearchCandidate();
   const imagesData = images.find((image) => image.numero === data.numero);
 
-  return (
+  return data.nom.toLowerCase().includes(term.toLowerCase()) ? (
     <Dialog>
       <DialogTrigger>
         <div className="bg-white w-max p-1">
@@ -56,7 +60,6 @@ export default function CandidateCard({
         </div>
       </DialogTrigger>
       <DialogContent
-        aria-description={`Votez pour ${data.nom}`}
         aria-describedby={undefined}
         title={`Votez pour ${data.nom}`}
         className="bg-white flex flex-col items-center justify-center max-w-none w-max"
@@ -100,5 +103,5 @@ export default function CandidateCard({
         <ConfirmButton data={data} elector={elector} />
       </DialogContent>
     </Dialog>
-  );
+  ) : null;
 }

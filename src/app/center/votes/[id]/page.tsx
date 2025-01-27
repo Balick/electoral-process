@@ -1,16 +1,15 @@
+import BlankButton from "@/components/blank-button";
+import CandidateCard from "@/components/candidate-card";
+import Navigation from "@/components/navigation";
 import SearchCandidate from "@/components/search-candidate";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { SearchProvider } from "@/context/search-candidate-provider";
-import CandidateCard from "@/components/candidate-card";
-import BlankButton from "@/components/blank-button";
-import React from "react";
 import {
   connectManager,
   getCandidates,
   getVoterById,
 } from "@/lib/supabase/utils";
-import Navigation from "@/components/navigation";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -19,7 +18,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   const data = await getVoterById(params.id);
   const elector = data[0];
 
-  if (elector.a_vote) {
+  if (!elector || elector.a_vote) {
     redirect("/center/identification");
   }
 

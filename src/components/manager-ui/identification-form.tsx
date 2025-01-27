@@ -1,8 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,12 +15,14 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
-import React from "react";
-import { Loader2Icon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import { getVoterById } from "@/lib/supabase/utils";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2Icon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const FormSchema = z.object({
   pin: z.string(),
@@ -47,7 +47,7 @@ export default function IdentificationForm() {
 
     await getVoterById(pin).then((elector) => {
       if (elector.length === 0) {
-        setError("Carte d'électeur non trouvée");
+        setError("Le numéro de la carte n'existe pas.");
         setIsLoading(false);
         return;
       }
