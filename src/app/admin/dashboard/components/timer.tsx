@@ -92,7 +92,7 @@ export default function Timer() {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  });
+  }, []);
 
   return (
     <span className="font-semibold text-3xl block">
