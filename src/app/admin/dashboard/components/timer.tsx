@@ -82,7 +82,7 @@ export default function Timer() {
           filter: "id=eq.1",
         },
         (payload) => {
-          console.log("new data: ", payload.new);
+          console.log("new duration: ", payload.new.fin);
           fetchData();
         }
       )
