@@ -67,28 +67,52 @@ export async function blankVote(id: string) {
   console.log("✨  Successfully updated blank vote");
 }
 
-// vote function to update a vote
+// Fonction de vote pour mettre à jour un vote
 export async function vote(
   id_candidate: string,
   id_centre: string,
   id_elector: string
 ) {
   const supabase = createClient();
-  // get the total_votes column from the centers table
-  const { data: dataCenter, error: errorCenter } = await supabase
-    .from("centres")
-    .select("total_votes")
-    .single();
 
-  if (errorCenter) {
-    console.error("❌  Error fetching center: ", errorCenter.message);
+  // Déterminer si le votant est un électeur ou un candidat
+  let tableVotant: string;
+  const { data: electeurData, error: electeurError } = await supabase
+    .from("electeurs")
+    .select("id")
+    .eq("id", id_elector)
+    .maybeSingle();
+
+  if (electeurError) {
+    console.error("❌ Erreur vérification électeur :", electeurError.message);
     return false;
   }
 
-  // update the a_vote, id_candidat, and date_vote
-  // for elector who has voted
-  const { error: errorVoter } = await supabase
-    .from("electeurs")
+  if (electeurData) {
+    tableVotant = "electeurs";
+  } else {
+    const { data: candidatData, error: candidatError } = await supabase
+      .from("candidates")
+      .select("id")
+      .eq("id", id_elector)
+      .maybeSingle();
+
+    if (candidatError) {
+      console.error("❌ Erreur vérification candidat :", candidatError.message);
+      return false;
+    }
+
+    if (candidatData) {
+      tableVotant = "candidates";
+    } else {
+      console.error("❌ Votant non trouvé dans electeurs ou candidates");
+      return false;
+    }
+  }
+
+  // Mettre à jour le statut de vote du votant
+  const { error: erreurVotant } = await supabase
+    .from(tableVotant)
     .update({
       a_vote: true,
       id_candidat: id_candidate,
@@ -96,53 +120,59 @@ export async function vote(
     })
     .eq("id", id_elector);
 
-  if (errorVoter) {
-    console.error("❌  Error while voting: ", errorVoter.message);
+  if (erreurVotant) {
+    console.error("❌ Erreur mise à jour votant :", erreurVotant.message);
     return false;
   }
 
-  // update the total_votes column for the center
-  const { error: errorUpdateCenter } = await supabase
+  // Récupérer le total_votes du centre
+  const { data: dataCentre, error: erreurCentre } = await supabase
     .from("centres")
-    .update({ total_votes: dataCenter.total_votes + 1 })
+    .select("total_votes")
+    .single();
+
+  if (erreurCentre) {
+    console.error("❌ Erreur récupération centre : ", erreurCentre.message);
+    return false;
+  }
+
+  // Mettre à jour le total_votes du centre
+  const { error: erreurMajCentre } = await supabase
+    .from("centres")
+    .update({ total_votes: dataCentre.total_votes + 1 })
     .eq("id", id_centre);
 
-  if (errorUpdateCenter) {
-    console.error(
-      "❌  Error while updating center: ",
-      errorUpdateCenter.message
-    );
+  if (erreurMajCentre) {
+    console.error("❌ Erreur mise à jour centre : ", erreurMajCentre.message);
     return false;
   }
 
-  // get the total_votes column for the candidate
-  const { data: dataCandidate, error: errorUpdateCandidate } = await supabase
+  // Récupérer le total_votes du candidat
+  const { data: dataCandidat, error: erreurCandidat } = await supabase
     .from("candidates")
     .select("total_votes")
     .eq("id", id_candidate)
     .single();
 
-  if (errorUpdateCandidate) {
-    console.error(
-      "❌  Error fetching candidate: ",
-      errorUpdateCandidate.message
-    );
+  if (erreurCandidat) {
+    console.error("❌ Erreur récupération candidat : ", erreurCandidat.message);
     return false;
   }
 
-  // update the total_votes column for the candidate
-  const { error: errorUpdateCandidateVotes } = await supabase
+  // Mettre à jour le total_votes du candidat
+  const { error: erreurMajCandidat } = await supabase
     .from("candidates")
-    .update({ total_votes: dataCandidate.total_votes + 1 })
+    .update({ total_votes: dataCandidat.total_votes + 1 })
     .eq("id", id_candidate);
 
-  if (errorUpdateCandidateVotes) {
+  if (erreurMajCandidat) {
     console.error(
-      "❌  Error updating candidate votes: ",
-      errorUpdateCandidateVotes.message
+      "❌ Erreur mise à jour votes candidat : ",
+      erreurMajCandidat.message
     );
     return false;
   }
 
-  console.log("✨  Successfully voted");
+  console.log("✨ Vote enregistré avec succès");
+  return true;
 }

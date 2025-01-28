@@ -82,7 +82,7 @@ export default function CandidateCard({
               )}
             </div>
             <div className="w-40 h-40 lg:w-72 lg:h-72 relative flex items-center justify-center">
-              <span className="block lg:text-2xl bg-pink-700 text-white font-semibold text-center absolute top-0 inset-x-0">
+              <span className="block lg:text-2xl bg-pink-700 text-white font-semibold text-center absolute top-0 inset-x-0 z-20">
                 {data.numero}
               </span>
               {imagesData && (
