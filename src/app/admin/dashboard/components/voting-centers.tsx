@@ -1,8 +1,8 @@
 "use client";
 
-import { Home } from "lucide-react";
-import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Home } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function VotingCenters() {
   const supabase = createClient();
@@ -45,16 +45,14 @@ export default function VotingCenters() {
           schema: "public",
           table: "centres",
         },
-        (payload) => {
-          fetchVotersData();
-        }
+        () => fetchVotersData()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, []);
 
   return (
     <div className="w-full border border-black rounded-lg p-4 ">

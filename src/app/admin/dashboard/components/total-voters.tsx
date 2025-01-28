@@ -47,41 +47,44 @@ export default function TotalVoters() {
 
     fetchVotersData();
 
-    const channel1 = supabase
-      .channel("public:candidates")
+    // Abonnements en temps réel mis à jour
+    const candidatesChannel = supabase
+      .channel("candidates-changes")
       .on(
         "postgres_changes",
         {
-          event: "UPDATE",
+          event: "*",
           schema: "public",
           table: "candidates",
         },
-        () => {
+        (payload) => {
+          console.log("Mise à jour reçue sur candidates :", payload);
           fetchVotersData();
         }
       )
       .subscribe();
 
-    const channel2 = supabase
-      .channel("public:electeurs")
+    const electeursChannel = supabase
+      .channel("electeurs-changes")
       .on(
         "postgres_changes",
         {
-          event: "UPDATE",
+          event: "*",
           schema: "public",
           table: "electeurs",
         },
-        () => {
+        (payload) => {
+          console.log("Mise à jour reçue sur electeurs :", payload);
           fetchVotersData();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel1);
-      supabase.removeChannel(channel2);
+      supabase.removeChannel(candidatesChannel);
+      supabase.removeChannel(electeursChannel);
     };
-  }, [supabase]);
+  }, []);
 
   return (
     <div className="w-full border border-black rounded-lg p-4 ">

@@ -1,9 +1,12 @@
 import { DateTimeForm } from "@/app/admin/dashboard/components/datetime-form";
 import { connectAdmin } from "@/lib/supabase/utils";
 import { Hourglass } from "lucide-react";
+import { BarWinner } from "./components/bar-winner";
 import LogOut from "./components/log-out";
 import Timer from "./components/timer";
 import TotalVoters from "./components/total-voters";
+import VotingCenters from "./components/voting-centers";
+import WhiteVotes from "./components/white-votes";
 
 export default async function Page() {
   // Verify if connected user is admin
@@ -25,11 +28,9 @@ export default async function Page() {
       </div>
 
       <div className="flex justify-between gap-8 mt-4 flex-wrap md:flex-nowrap">
-        <div>
-          <TotalVoters />
-          {/*<VotingCenters />
-          <WhiteVotes />*/}
-        </div>
+        <TotalVoters />
+        <VotingCenters />
+        <WhiteVotes />
         <div className="w-full border border-black rounded-lg p-4 ">
           <div className="flex justify-between items-center gap-2">
             <span className="text-nowrap">Temps restant</span>
@@ -40,10 +41,10 @@ export default async function Page() {
         </div>
       </div>
 
-      {/*<div className="flex flex-col lg:flex-row gap-4 mt-4">
+      <div className="flex flex-col lg:flex-row gap-4 mt-4">
         <BarWinner />
-        <CandidateList />
-      </div>*/}
+        {/*<CandidateList />*/}
+      </div>
     </div>
   );
 }
