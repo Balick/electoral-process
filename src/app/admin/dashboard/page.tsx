@@ -2,6 +2,7 @@ import { DateTimeForm } from "@/app/admin/dashboard/components/datetime-form";
 import { connectAdmin } from "@/lib/supabase/utils";
 import { Hourglass } from "lucide-react";
 import { BarWinner } from "./components/bar-winner";
+import CandidateList from "./components/candidate-list";
 import LogOut from "./components/log-out";
 import Timer from "./components/timer";
 import TotalVoters from "./components/total-voters";
@@ -43,7 +44,7 @@ export default async function Page() {
 
       <div className="flex flex-col lg:flex-row gap-4 mt-4">
         <BarWinner />
-        {/*<CandidateList />*/}
+        <CandidateList />
       </div>
     </div>
   );

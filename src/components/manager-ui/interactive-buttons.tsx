@@ -63,7 +63,7 @@ export default function InteractiveButtons() {
         </p>
       </li>
       <li className="w-full">
-        <Button disabled={false /*disabled*/} className="w-full h-auto p-0">
+        <Button disabled={disabled} className="w-full h-auto p-0">
           <Link
             href={"/center/identification"}
             className="w-full rounded py-4 uppercase font-semibold bg-cblue-light hover:bg-cblue active:bg-cblue active:scale-105 text-lg transition-all duration-300"

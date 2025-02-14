@@ -61,7 +61,7 @@ export default function VotingCenters() {
         <Home className="w-4 h-4" />
       </div>
       <span className="font-semibold text-3xl block">{totalVoters}</span>
-      <span className="text-sm -mt-1 block">
+      <span className="text-sm -mt-1 block hidden">
         {percentageNotVoted}% n&apos;ont pas voté
       </span>
     </div>

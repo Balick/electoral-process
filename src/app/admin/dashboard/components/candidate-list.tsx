@@ -15,10 +15,14 @@ import { useEffect, useState } from "react";
 export default function CandidateList() {
   const supabase = createClient();
   const [data, setData] = useState<any[] | null>([]);
-  const [totalCandidatesVote, setTotalCandidatesVote] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const updateData = async (realTimeData?: any | null) => {
+      if (realTimeData) {
+        setData(realTimeData);
+        return;
+      }
+
       const { data: candidates, error } = await supabase
         .from("candidates")
         .select("*");
@@ -32,13 +36,10 @@ export default function CandidateList() {
 
       if (candidates) {
         setData(candidates);
-        setTotalCandidatesVote(
-          candidates.reduce((acc, candidate) => acc + candidate.total_votes, 0)
-        );
       }
     };
 
-    fetchData();
+    updateData();
 
     const channel = supabase
       .channel("results")
@@ -50,7 +51,7 @@ export default function CandidateList() {
           table: "candidates",
         },
         (payload) => {
-          fetchData();
+          updateData(payload.new);
         }
       )
       .subscribe();
@@ -58,7 +59,7 @@ export default function CandidateList() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, []);
 
   return (
     <Card className="w-full lg:basis-[40%] h-[440px] border-black overflow-auto">
