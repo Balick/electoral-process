@@ -1,5 +1,6 @@
 import InteractiveButtons from "@/components/manager-ui/interactive-buttons";
 import Navigation from "@/components/navigation";
+import DialogRedirectMsg from "@/components/RedirectMsgDialog";
 import { signOut } from "@/lib/actions";
 import { connectManager } from "@/lib/supabase/utils";
 import { Play } from "lucide-react";
@@ -7,8 +8,16 @@ import Image from "next/image";
 import Link from "next/link";
 import ceniLogo from "../../../public/ceni-logo.png";
 
-export default async function Home() {
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   await connectManager();
+
+  const sessionEnd = Boolean((await searchParams).sessionEnd);
 
   const localisation = {
     province: "Haut Katanga",
@@ -35,7 +44,8 @@ export default async function Home() {
 
   return (
     <>
-      <Navigation />
+      <DialogRedirectMsg open={sessionEnd} />
+      <Navigation hiddenTimer />
       <div className="min-h-screen lg:max-h-screen lg:overflow-hidden flex flex-col py-16">
         <div className="flex items-center flex-col">
           <div className="py-4 bg-gray-200 px-8 w-full uppercase text-cblue-light space-y-4 font-semibold">

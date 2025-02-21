@@ -1,8 +1,9 @@
 "use client";
 
 import Timer from "@/app/admin/dashboard/components/timer";
+import DateTime from "@/components/date-time";
 
-export default function Navigation() {
+export default function Navigation({ hiddenTimer }: { hiddenTimer?: boolean }) {
   const centerName = "Mapassa";
 
   return (
@@ -15,9 +16,15 @@ export default function Navigation() {
           <li>
             <header className="uppercase text-2xl font-bold">CENI</header>
           </li>
-          <li>
-            <Timer className="inline text-lg" />
-          </li>
+          {!hiddenTimer ? (
+            <li>
+              <Timer className="inline text-lg" />
+            </li>
+          ) : (
+            <li>
+              <DateTime />
+            </li>
+          )}
         </ul>
       </nav>
     </div>

@@ -3,7 +3,9 @@ import CandidateCard from "@/components/candidate-card";
 import Navigation from "@/components/navigation";
 import SearchCandidate from "@/components/search-candidate";
 import { Button } from "@/components/ui/button";
+import RealTimeProvider from "@/context/real-time-session-provider";
 import { SearchProvider } from "@/context/search-candidate-provider";
+import { checkSession } from "@/lib/supabase/session-management";
 import {
   connectManager,
   getCandidates,
@@ -14,6 +16,7 @@ import { redirect } from "next/navigation";
 
 export default async function Page({ params }: { params: { id: string } }) {
   await connectManager();
+  await checkSession();
 
   const data = await getVoterById(params.id);
   const elector = data[0];
@@ -25,7 +28,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   const candidates = await getCandidates();
 
   return (
-    <>
+    <RealTimeProvider>
       <Navigation />
       <SearchProvider>
         <div className="min-h-screen lg:max-h-screen lg:overflow-hidden flex flex-col pt-16 px-8 bg-gray-100">
@@ -63,6 +66,6 @@ export default async function Page({ params }: { params: { id: string } }) {
           </div>
         </div>
       </SearchProvider>
-    </>
+    </RealTimeProvider>
   );
 }

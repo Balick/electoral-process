@@ -1,11 +1,29 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+
+export async function checkSession() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("duree")
+    .select("end_session")
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    console.error("Erreur lors de la vérification de la session :", error);
+    return;
+  }
+
+  if (data?.end_session) {
+    redirect("/center?sessionEnd=true");
+  }
+}
 
 // updateEndTime function to update the end time
 // params: endTime (string) is the new end time
 export async function updateEndTime(endTime: string) {
-  console.log("End Time : ", endTime);
   const supabase = createClient();
 
   // verify if during is existing in database
