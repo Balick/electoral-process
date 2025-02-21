@@ -1,9 +1,9 @@
 import IdentificationForm from "@/components/manager-ui/identification-form";
+import Navigation from "@/components/navigation";
+//import { createClient } from "@/lib/supabase/server";
+import { connectManager } from "@/lib/supabase/utils";
 import Image from "next/image";
 import carte from "../../../../public/carte.jpg";
-import Navigation from "@/components/navigation";
-import React from "react";
-import { connectManager } from "@/lib/supabase/utils";
 
 export default async function Page() {
   await connectManager();

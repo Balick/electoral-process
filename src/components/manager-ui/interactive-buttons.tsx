@@ -65,7 +65,7 @@ export default function InteractiveButtons() {
       <li className="w-full">
         <Button disabled={disabled} className="w-full h-auto p-0">
           <Link
-            href={"/center/identification"}
+            href={disabled ? "" : "/center/identification"}
             className="w-full rounded py-4 uppercase font-semibold bg-cblue-light hover:bg-cblue active:bg-cblue active:scale-105 text-lg transition-all duration-300"
           >
             Ouvrir les votes

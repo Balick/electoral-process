@@ -11,7 +11,6 @@ export default function Timer({ className }: { className?: string }) {
     minutes: 0,
     seconds: 0,
   });
-  //const [endSession, setEndSession] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -28,8 +27,6 @@ export default function Timer({ className }: { className?: string }) {
           console.error("Erreur lors de la récupération des données :", error);
           return;
         }
-
-        //setEndSession(data.end_session);
 
         const endDate = new Date(data.fin);
         const now = new Date();
@@ -66,7 +63,6 @@ export default function Timer({ className }: { className?: string }) {
 
     const updateEndSession = async (id: string) => {
       await supabase.from("duree").update({ end_session: true }).eq("id", id);
-      //setEndSession(true);
     };
 
     fetchData();

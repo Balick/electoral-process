@@ -1,5 +1,6 @@
+"use client";
+
 import Timer from "@/app/admin/dashboard/components/timer";
-//import DateTime from "@/components/date-time";
 
 export default function Navigation() {
   const centerName = "Mapassa";
@@ -15,7 +16,6 @@ export default function Navigation() {
             <header className="uppercase text-2xl font-bold">CENI</header>
           </li>
           <li>
-            {/*<DateTime />*/}
             <Timer className="inline text-lg" />
           </li>
         </ul>
