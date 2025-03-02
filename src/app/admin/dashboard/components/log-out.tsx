@@ -3,15 +3,18 @@
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions";
 import { LoaderCircleIcon } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 export default function LogOut() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    signOut();
+    await signOut();
+    router.replace("/admin/signin");
   };
 
   return (

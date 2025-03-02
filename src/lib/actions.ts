@@ -1,8 +1,8 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import {redirect} from "next/navigation";
 
-import { createClient } from "@/lib/supabase/server";
+import {createClient} from "@/lib/supabase/server";
 
 type LoginData = {
   email: string;
@@ -11,12 +11,12 @@ type LoginData = {
 };
 
 // login function to log in user
-export async function login({ email, password, target }: LoginData) {
+export async function login({email, password, target}: LoginData) {
   const supabase = createClient();
-  const data = { email, password };
+  const data = {email, password};
   let errorMessage = "Erreur lors de la connexion.";
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  const {error} = await supabase.auth.signInWithPassword(data);
 
   if (error) {
     console.error(error.message);
@@ -28,7 +28,7 @@ export async function login({ email, password, target }: LoginData) {
   }
 
   // verify if user is a manager or an admin
-  const { data: user } = await supabase
+  const {data: user} = await supabase
     .from("users")
     .select("*")
     .eq("email", email)
@@ -55,10 +55,51 @@ export async function login({ email, password, target }: LoginData) {
 // signOut function to log out user
 export async function signOut() {
   const supabase = createClient();
-  const { error } = await supabase.auth.signOut();
+  const {error} = await supabase.auth.signOut();
 
   if (error) {
     console.log(`❌  [SignOut Error] ${error.message}`);
+  }
+}
+
+export async function ResetData() {
+  const supabase = createClient();
+
+  const { error: electeursError } = await supabase
+    .from('electeurs')
+    .update({
+      a_vote: false,
+      date_vote: null,
+      id_candidat: null
+    }).neq('id', "c9b383f0-1819-4e65-bdbc-f991e58f383b");
+
+  if (electeursError) {
+    console.error(`❌ [ResetData/electeurs] ${electeursError.message}`);
+    throw electeursError;
+  }
+
+  const { error: candidatsError } = await supabase
+    .from('candidates')
+    .update({
+      a_vote: false,
+      date_vote: null,
+      total_votes: 0
+    }).neq('id', "c9b383f0-1819-4e65-bdbc-f991e58f383b");
+
+  if (candidatsError) {
+    console.error(`❌ [ResetData/candidats] ${candidatsError.message}`);
+    throw candidatsError;
+  }
+
+  const { error: centresError } = await supabase
+    .from('centres')
+    .update({
+      total_votes: 0
+    }).neq('id', "c9b383f0-1819-4e65-bdbc-f991e58c384b");
+
+  if (centresError) {
+    console.error(`❌ [ResetData/centres] ${centresError.message}`);
+    throw centresError;
   }
 }
 

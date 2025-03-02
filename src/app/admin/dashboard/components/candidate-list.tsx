@@ -1,29 +1,24 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { images } from "@/constants";
-import { createClient } from "@/lib/supabase/client";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/card";
+import {images} from "@/constants";
+import {createClient} from "@/lib/supabase/client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 
 export default function CandidateList() {
   const supabase = createClient();
-  const [data, setData] = useState<any[] | null>([]);
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     const updateData = async (realTimeData?: any | null) => {
       if (realTimeData) {
-        setData(realTimeData);
+        const newData = Array.isArray(realTimeData) ? realTimeData : [realTimeData];
+        setData(newData);
         return;
       }
 
-      const { data: candidates, error } = await supabase
+      const {data: candidates, error} = await supabase
         .from("candidates")
         .select("*");
 
@@ -71,8 +66,7 @@ export default function CandidateList() {
       </CardHeader>
       <CardContent className="-translate-y-4">
         <ol className="flex flex-col gap-2">
-          {data
-            ?.sort((a, b) => b.total_votes - a.total_votes)
+          {data?.sort((a, b) => b.total_votes - a.total_votes)
             .map((candidate: any, idx) => {
               const image = images.find(
                 (image: any) => image.numero === candidate.numero

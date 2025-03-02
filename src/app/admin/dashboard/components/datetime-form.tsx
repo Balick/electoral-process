@@ -74,16 +74,16 @@ export function DateTimeForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex gap-2 items-center"
+        className="flex gap-2 items-center rounded-lg w-full h-[60px]"
       >
         {/* Champ de sélection de la durée */}
         <FormField
           control={form.control}
           name="during"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="h-full">
               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
+                <FormControl className="h-full">
                   <SelectTrigger>
                     <SelectValue placeholder="Durée de la session" />
                   </SelectTrigger>
@@ -105,12 +105,12 @@ export function DateTimeForm() {
         <Button
           type="submit"
           disabled={form.formState.isSubmitting || timerRunning}
-          className="bg-cred hover:bg-cred/70 transition-all duration-300 font-semibold px-8 text-nowrap w-max py-2 rounded-lg"
+          className="bg-cblue-light hover:bg-cblue active:bg-cblue transition-all duration-300 font-semibold px-8 text-nowrap py-2 rounded-lg w-full h-full active:scale-105 text-lg"
         >
           {form.formState.isSubmitting && (
             <LoaderCircleIcon className="w-4 h-4 mr-2 animate-spin" />
           )}
-          Démarrer la session
+          DEMARRER LA SESSION
         </Button>
       </form>
     </Form>

@@ -5,6 +5,7 @@ import DateTime from "@/components/date-time";
 import { images } from "@/constants";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import clsx from "clsx";
 import { Clock } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -160,12 +161,17 @@ export default function SuccessPage() {
                 <div key={candidate.id} className="flex items-center gap-4">
                   <span className="text-lg font-bold">{idx + 1}</span>
                   <div className="flex gap-4 items-center w-full">
-                    <div className="w-20 h-20 rounded-full overflow-hidden relative flex-none">
+                    <div
+                      className={clsx(
+                        "w-20 h-20 rounded-full overflow-hidden relative flex-none",
+                        idx === 0 && percentage > 0 && "p-1 bg-yellow-400"
+                      )}
+                    >
                       {candidateImage?.image && (
                         <Image
                           src={candidateImage.image}
                           alt={`Photo de ${candidate.name}`}
-                          className="object-cover w-full h-full"
+                          className="object-cover w-full h-full rounded-full"
                           width={80}
                           height={80}
                           priority
@@ -176,13 +182,19 @@ export default function SuccessPage() {
                       <span className="font-semibold text-lg">
                         {candidate.name}
                       </span>
-                      <div className="w-full h-11 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className="bg-cblue-light h-full rounded-full transition-all duration-300 flex items-center px-2 justify-end"
-                          style={{ width: `${percentage}%` }}
-                        >
+                      <div className="w-full h-11 flex items-center bg-slate-200 rounded-full overflow-hidden relative">
+                        {percentage > 0 && (
+                          <div
+                            className={clsx(
+                              "absolute inset-0 bg-cblue-light h-full rounded-full transition-all duration-300 flex items-center px-2 justify-end",
+                              idx === 0 && "bg-yellow-400"
+                            )}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        )}
+                        <span className="relative z-10 pl-8">
                           {percentage}%
-                        </div>
+                        </span>
                       </div>
                     </div>
                   </div>
