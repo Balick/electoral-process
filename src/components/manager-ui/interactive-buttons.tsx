@@ -1,6 +1,6 @@
 "use client";
 
-import Timer from "@/app/admin/dashboard/components/timer";
+import Timer from "@/app/admin/dashboard/_components/timer";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";

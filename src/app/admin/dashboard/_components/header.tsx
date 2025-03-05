@@ -1,5 +1,5 @@
+import DashboardNavLinks from "@/app/admin/dashboard/_components/dashboard-nav-links";
 import DateTime from "@/components/date-time";
-import DashboardNavLinks from "@/app/admin/dashboard/components/dashboard-nav-links";
 
 export default function HeaderDashboard() {
   return (

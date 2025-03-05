@@ -1,6 +1,6 @@
 "use client";
 
-import Timer from "@/app/admin/dashboard/components/timer";
+import Timer from "@/app/admin/dashboard/_components/timer";
 import DateTime from "@/components/date-time";
 
 export default function Navigation({ hiddenTimer }: { hiddenTimer?: boolean }) {
