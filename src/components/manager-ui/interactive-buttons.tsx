@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function InteractiveButtons() {
+export default function InteractiveButtons({ slug }: { slug: string }) {
   const [disabled, setIsDisabled] = useState(false);
   const supabase = createClient();
 
@@ -65,7 +65,7 @@ export default function InteractiveButtons() {
       <li className="w-full">
         <Button disabled={disabled} className="w-full h-auto p-0">
           <Link
-            href={disabled ? "" : "/center/identification"}
+            href={disabled ? "" : `/center/${slug}/identification`}
             className="w-full rounded py-4 uppercase font-semibold bg-cblue-light hover:bg-cblue active:bg-cblue active:scale-105 text-lg transition-all duration-300"
           >
             Ouvrir les votes

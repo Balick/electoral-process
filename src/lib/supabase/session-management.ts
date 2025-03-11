@@ -1,9 +1,13 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function checkSession() {
+  const path = headers().get("referer");
+  const center = path?.split("/")[4];
+
   const supabase = createClient();
   const { data, error } = await supabase
     .from("duree")
@@ -17,7 +21,8 @@ export async function checkSession() {
   }
 
   if (data?.end_session) {
-    redirect("/center?sessionEnd=true");
+    console.log("center: ", center);
+    redirect(`/center/${center}?sessionEnd=true`);
   }
 }
 

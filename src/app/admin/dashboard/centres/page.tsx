@@ -1,9 +1,12 @@
 import { getCenters, getManagers } from "@/lib/supabase/center";
+import { unstable_noStore } from "next/cache";
 import LogOut from "../_components/log-out";
 import { columns } from "./_components/columns";
 import { DataTable } from "./_components/data-table";
 
 export default async function Page() {
+  unstable_noStore();
+
   const centers = await getCenters();
   const managers = await getManagers();
 

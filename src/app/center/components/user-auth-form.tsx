@@ -1,15 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LoaderIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { login } from "@/lib/actions";
-import { usePathname } from "next/navigation";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -17,6 +8,15 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { login } from "@/lib/actions";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoaderIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const formSchema = z.object({
   email: z
@@ -26,9 +26,10 @@ const formSchema = z.object({
   target: z.string(),
 });
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+export function UserAuthForm({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname();
   // target is either "center" or "admin"
   // depending on the current page

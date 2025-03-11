@@ -2,24 +2,26 @@
 
 import {
   Dialog,
-  DialogContent,
-  DialogTrigger,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "./ui/button";
-import { ThumbsUp, LoaderCircle } from "lucide-react";
 import { blankVote } from "@/lib/supabase/utils";
-import React from "react";
+import { LoaderCircle, ThumbsUp } from "lucide-react";
 import { useRouter } from "next/navigation";
+import React from "react";
+import { Button } from "./ui/button";
 
 export default function BlankButton({
   id,
   name,
+  center,
 }: {
   id: string;
   name: string;
+  center: string;
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -76,7 +78,9 @@ export default function BlankButton({
                 participation.
               </DialogDescription>
               <Button
-                onClick={() => router.replace("/center/identification")}
+                onClick={() =>
+                  router.replace(`/center/${center}/identification`)
+                }
                 disabled={isLoading}
                 className="bg-cblue font-semibold w-full h-10 lg:h-12 lg:text-xl hover:bg-cblue-light transition-all duration-300"
               >

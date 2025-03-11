@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import clsx from "clsx";
 import { UserRoundPen } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -57,14 +58,21 @@ export const columns: ColumnDef<Center>[] = [
   {
     accessorKey: "manager",
     header: () => <Header header="Chef de centre" />,
-    cell: ({ row }) => {
+    cell: function ManagerCell({ row }) {
       const manager = row.original.manager;
+      const router = useRouter();
+
       return (
         <Cell
           value={manager ? manager.name : "-"}
           classNames="flex items-center gap-2"
         >
-          <button className="bg-cblue hover:bg-cblue-light text-white hover:text-black transition-all duration-300 font-semibold p-1 text-nowrap w-max rounded-lg">
+          <button
+            onClick={() =>
+              router.push(`/admin/dashboard/centres/manager/${row.original.id}`)
+            }
+            className="bg-cblue hover:bg-cblue-light text-white hover:text-black transition-all duration-300 font-semibold p-1 text-nowrap w-max rounded-lg"
+          >
             <UserRoundPen className="w-4 h-4" />
           </button>
         </Cell>

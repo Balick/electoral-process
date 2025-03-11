@@ -86,3 +86,20 @@ export async function getManagers() {
 
   return data;
 }
+
+export async function updateManager(id: string, data: any) {
+  const supabase = createClient();
+  const { data: updatedData, error } = await supabase
+    .from("users")
+    .update(data)
+    .eq("id", id);
+
+  if (error) {
+    console.error(
+      `❌   Erreur lors de la mise à jour du manager ${id} : `,
+      error.message
+    );
+  }
+
+  return updatedData;
+}
