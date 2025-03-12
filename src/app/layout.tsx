@@ -1,6 +1,6 @@
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import React from "react";
-import { Toaster } from "@/components/ui/toaster";
 
 // import css file
 import "./globals.css";

@@ -10,9 +10,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { updateManager } from "@/lib/actions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -25,9 +27,16 @@ const formSchema = z.object({
   password: z.string().min(8, {
     message: "Le mot de passe doit contenir au moins 8 caractères",
   }),
+  error: z.string().optional(),
 });
 
-export default function EditForm({ manager }: { manager: any }) {
+export default function EditForm({
+  manager,
+  centerId,
+}: {
+  manager: any;
+  centerId: string;
+}) {
   const isNull = manager.length === 0;
   const data = isNull ? null : manager[0];
 
@@ -40,10 +49,17 @@ export default function EditForm({ manager }: { manager: any }) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const errorMessage = await updateManager(data?.id, values, centerId);
+
+    if (errorMessage) {
+      form.setError("error", { type: "manual", message: errorMessage });
+      return;
+    }
+
+    toast("Mise à jour effectuée", {
+      description: "Le chef de centre a été mis à jour.",
+    });
   }
 
   return (

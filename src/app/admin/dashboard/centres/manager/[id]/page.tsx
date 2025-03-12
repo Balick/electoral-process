@@ -1,11 +1,15 @@
 import LogOut from "@/app/admin/dashboard/_components/log-out";
 import { getCenter, getManager } from "@/lib/supabase/center";
+import { redirect } from "next/navigation";
 import EditForm from "./editForm";
 
 export default async function Page({ params }: { params: { id: string } }) {
   const center = await getCenter(params.id);
   const manager = await getManager(params.id);
-  console.log(center);
+
+  if (!center) {
+    redirect("/admin");
+  }
 
   return (
     <div>
@@ -19,8 +23,10 @@ export default async function Page({ params }: { params: { id: string } }) {
       </div>
 
       <div className="my-8">
-        <div>{}</div>
-        <EditForm manager={manager} />
+        <h1 className="uppercase mb-8">
+          Centre {center?.nom} | {center?.ville}/{center?.province}
+        </h1>
+        <EditForm manager={manager} centerId={center.id} />
       </div>
     </div>
   );

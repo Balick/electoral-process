@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import adminClient from "@/lib/supabase/adminClient";
 import { createClient } from "@/lib/supabase/server";
 
 type LoginData = {
@@ -121,7 +122,218 @@ export async function ResetData() {
   }
 }
 
-/*
+export async function updateManager(
+  managerId: string | null,
+  props: { email: string; password: string; name: string },
+  center_id: string
+) {
+  const supabase = createClient();
+  let shouldCreateUser = managerId ? false : true;
+  const { email, password, name } = props;
+
+  // Get the user by ID from the adminClient
+  if (!shouldCreateUser && managerId) {
+    // Condition pour s'assurer que managerId est une string avant de l'utiliser
+    const { error: getUserError } = await adminClient.getUserById(managerId);
+
+    if (getUserError) {
+      if (getUserError.message === "User not found") {
+        shouldCreateUser = true;
+      } else {
+        console.error("Erreur auth:", getUserError.message);
+        return "Erreur serveur";
+      }
+    }
+  }
+
+  if (shouldCreateUser) {
+    // If shouldCreateUser is true, create a new user
+    const { data: createdAuthUser, error: createAuthError } =
+      await adminClient.createUser({
+        email: email,
+        password: password,
+        user_metadata: {
+          name: name,
+        },
+        email_confirm: true,
+      });
+
+    if (createAuthError) {
+      console.error(
+        `❌  [Error creating auth user] ${createAuthError.message}`
+      );
+      return "Une erreur s'est produit lors de la création de l'utilisateur.";
+    }
+
+    const { error: createUserError } = await supabase.from("users").insert({
+      id: createdAuthUser.user.id,
+      email: email,
+      password: password,
+      role: "manager",
+      center_id: center_id,
+      name: name,
+    });
+
+    if (createUserError) {
+      console.error(`❌  [Error creating db user] ${createUserError.message}`);
+      return "Une erreur s'est produit lors de la création de l'utilisateur.";
+    }
+
+    console.log("✅  [Event] Successfully created user. ✨");
+  } else {
+    // If shouldCreateUser is false, update the user
+    if (managerId) {
+      // S'assurer encore une fois que managerId n'est pas null avant de l'utiliser ici. Bien que logiquement, il ne devrait pas être null dans ce bloc.
+      const { error: updatedAuthError } = await adminClient.updateUserById(
+        managerId, // managerId est maintenant garanti d'être une string ici grâce à la condition au-dessus
+        {
+          email: email,
+          password: password,
+          user_metadata: {
+            name: name,
+          },
+        }
+      );
+
+      if (updatedAuthError) {
+        console.error(
+          `❌  [Error updating auth user] ${updatedAuthError.message}`
+        );
+        return "Une erreur s'est produit lors de la mise à jour de l'utilisateur.";
+      }
+
+      const { error: updatedUserError } = await supabase
+        .from("users")
+        .update({
+          email: email,
+          password: password,
+          name: name,
+        })
+        .eq("id", managerId); // managerId est également garanti d'être une string ici
+
+      if (updatedUserError) {
+        console.error(
+          `❌  [Error updating db user] ${updatedUserError.message}`
+        );
+        return "Une erreur s'est produit lors de la mise à jour de l'utilisateur.";
+      }
+
+      console.log("✅  [Event] Successfully updated user. ✨");
+    } else {
+      // Cas improbable, mais pour la robustesse, on gère le cas où managerId serait null dans le bloc 'else'
+      console.error(
+        "❌ Erreur logique : managerId est null dans le bloc de mise à jour."
+      );
+      return "Erreur interne : ID de manager manquant pour la mise à jour.";
+    }
+  }
+}
+
+export async function updateManager_(
+  managerId: string,
+  props: { email: string; password: string; name: string },
+  center_id: string
+) {
+  const supabase = createClient();
+  let notFound = managerId ? false : true; // Flag to check if the user is not found
+  const { email, password, name } = props; // Variables to store the user's email, password, and name
+
+  // Get the user by ID from the adminClient
+  const { error } = await adminClient.getUserById(managerId);
+
+  if (error) {
+    // Check if the error message is "User not found"
+    // If it is, set the notFound flag to true, otherwise log the error message
+    if (error.message === "User not found") {
+      notFound = true;
+    } else {
+      console.error("Erreur auth:", error.message);
+      return "Erreur serveur"; // Return an error message if the error is not "User not found"
+    }
+  }
+
+  if (notFound) {
+    // If the user is not found, create a new user
+    const { data: createdAuthUser, error: createAuthError } =
+      await adminClient.createUser({
+        email: email,
+        password: password,
+        user_metadata: {
+          name: name,
+        },
+      });
+
+    if (createAuthError) {
+      console.error(
+        `❌  [Error verifying user existence] ${createAuthError.message}`
+      );
+      // Return an error message if there is an error creating the user
+      return "Une erreur s'est produit lors de la création de l'utilisateur.";
+    }
+
+    // Create a new user in the users table
+    // The difference between the createdAuthUser and the createdUser is that
+    // the createdAuthUser contains the user's id, while the createdUser does not
+    // This is because the createdAuthUser is used to create the user in the Authentisation Users table
+    // The createdUser is used to create the user in the public users table
+    const { error: createUserError } = await supabase.from("users").insert({
+      id: createdAuthUser.user.id,
+      email: email,
+      password: password,
+      role: "manager",
+    });
+
+    if (createUserError) {
+      console.error(
+        `❌  [Error verifying user existence] ${createUserError.message}`
+      );
+      // Return an error message if there is an error creating the user
+      return "Une erreur s'est produit lors de la création de l'utilisateur.";
+    }
+
+    console.log("✅  [Event] Successfully created user. ✨");
+  } else {
+    // If the user is found, update the user
+    // Update the user in the Authentisation Users table
+    const { error: updatedAuthError } = await adminClient.updateUserById(
+      managerId,
+      {
+        email: email,
+        password: password,
+        user_metadata: {
+          name: name,
+        },
+      }
+    );
+
+    if (updatedAuthError) {
+      console.error(`❌  [Error updating user] ${updatedAuthError.message}`);
+      // Return an error message if there is an error updating the user
+      return "Une erreur s'est produit lors de la mise à jour de l'utilisateur.";
+    }
+
+    // Update the user in the public users table
+    const { error: updatedUserError } = await supabase
+      .from("users")
+      .update({
+        email: email,
+        password: password,
+        role: "manager",
+        center_id: center_id,
+        name: name,
+      })
+      .eq("id", managerId);
+
+    if (updatedUserError) {
+      console.error(`❌  [Error updating user] ${updatedUserError.message}`);
+      // Return an error message if there is an error updating the user
+      return "Une erreur s'est produit lors de la mise à jour de l'utilisateur.";
+    }
+
+    console.log("✅  [Event] Successfully updated user. ✨");
+  }
+}
+
 export async function signup(formData: FormData) {
   const supabase = createClient();
 
@@ -147,7 +359,7 @@ export async function signup(formData: FormData) {
 
   if (checkUserError) {
     console.error(
-      `❌  [Error verifying user existence] ${checkUserError.message}`,
+      `❌  [Error verifying user existence] ${checkUserError.message}`
     );
     return;
   }
@@ -170,7 +382,4 @@ export async function signup(formData: FormData) {
   }
 
   console.log("[Event Signup] User already exists!");
-
-  revalidatePath("/center/signin", "page");
 }
-*/
