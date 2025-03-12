@@ -1,11 +1,15 @@
 "use client";
 
-import Timer from "@/app/admin/dashboard/components/timer";
+import Timer from "@/app/admin/dashboard/_components/timer";
 import DateTime from "@/components/date-time";
 
-export default function Navigation({ hiddenTimer }: { hiddenTimer?: boolean }) {
-  const centerName = "Mapassa";
-
+export default function Navigation({
+  hiddenTimer,
+  centerName,
+}: {
+  hiddenTimer?: boolean;
+  centerName: string;
+}) {
   return (
     <div className="bg-cblue text-white px-8 py-4 fixed inset-x-0 top-0 z-10">
       <nav>

@@ -1,10 +1,12 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function RealTimeProvider({ children }) {
+  const pathname = usePathname();
+  const center = pathname?.split("/")[2];
   const router = useRouter();
   const supabase = createClient();
 
@@ -25,7 +27,7 @@ export default function RealTimeProvider({ children }) {
       }
 
       if (data?.end_session && isMounted) {
-        router.replace("/center?sessionEnd=true");
+        router.replace(`/center/${center}?sessionEnd=true`);
       }
     };
 
@@ -46,7 +48,7 @@ export default function RealTimeProvider({ children }) {
         (payload) => {
           const updatedData = payload.new;
           if (updatedData.end_session && isMounted) {
-            router.replace("/center?sessionEnd=true");
+            router.replace(`/center/${center}?sessionEnd=true`);
           }
         }
       )

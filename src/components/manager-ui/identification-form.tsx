@@ -15,6 +15,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { getCenter } from "@/lib/supabase/center";
 import { getVoterById } from "@/lib/supabase/utils";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +29,11 @@ const FormSchema = z.object({
   pin: z.string(),
 });
 
-export default function IdentificationForm() {
+export default function IdentificationForm({
+  centerName,
+}: {
+  centerName: string;
+}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState("");
@@ -45,7 +50,7 @@ export default function IdentificationForm() {
     setIsLoading(true);
     setError("");
 
-    await getVoterById(pin).then((elector) => {
+    await getVoterById(pin).then(async (elector) => {
       if (elector.length === 0) {
         setError("Le numéro de la carte n'existe pas.");
         setIsLoading(false);
@@ -58,8 +63,18 @@ export default function IdentificationForm() {
         return;
       }
 
+      const center = await getCenter(elector[0].id_centre);
+      if (center && centerName !== center.nom) {
+        console.log(centerName, center.nom);
+        setError(
+          `L'électeur ${elector[0].nom} n'est pas de ce centre.\nVeuillez vous rendre au centre ${center.nom}/${center.ville}/${center.province}`
+        );
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(false);
-      router.replace(`/center/votes/${pin}`);
+      router.replace(`/center/${centerName}/votes/${pin}`);
     });
   }
 

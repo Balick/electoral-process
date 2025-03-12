@@ -11,6 +11,7 @@ import {
   getCandidates,
   getVoterById,
 } from "@/lib/supabase/utils";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -18,6 +19,8 @@ export default async function Page({ params }: { params: { id: string } }) {
   await connectManager();
   await checkSession();
 
+  const path = headers().get("referer");
+  const center = path?.split("/")[4];
   const data = await getVoterById(params.id);
   const elector = data[0];
 
@@ -29,7 +32,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <RealTimeProvider>
-      <Navigation />
+      <Navigation centerName={center || ""} />
       <SearchProvider>
         <div className="min-h-screen lg:max-h-screen lg:overflow-hidden flex flex-col pt-16 px-8 bg-gray-100">
           <div className="py-2 flex flex-col lg:flex-row lg:items-center justify-between gap-">
@@ -44,21 +47,30 @@ export default async function Page({ params }: { params: { id: string } }) {
                 Pour vous abstenir,
                 <br /> apppuyez sur le bouton &quot;VOTE BLANC&quot;
               </span>
-              <BlankButton id={elector.identifiant} name={elector.nom} />
+              <BlankButton
+                center={center || ""}
+                id={elector.identifiant}
+                name={elector.nom}
+              />
             </div>
           </div>
 
           <div className="grow overflow-y-scroll">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 place-items-center">
               {candidates?.map((candidate, idx) => (
-                <CandidateCard data={candidate} elector={elector} key={idx} />
+                <CandidateCard
+                  center={center || ""}
+                  data={candidate}
+                  elector={elector}
+                  key={idx}
+                />
               ))}
             </div>
           </div>
 
           <div className="py-2 flex flex-col gap-4 md:flex-row justify-between md:items-center">
             <SearchCandidate />
-            <Link replace href={"/center/identification"}>
+            <Link replace href={`/center/${center}/identification`}>
               <Button className="w-full uppercase bg-pink-700 font-semibold tracking-wider hover:bg-pink-600 active:scale-105 transition-all duration-300">
                 Annuler
               </Button>

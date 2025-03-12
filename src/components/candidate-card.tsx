@@ -15,9 +15,11 @@ import ConfirmButton from "./confirm-button";
 export default function CandidateCard({
   data,
   elector,
+  center,
 }: {
   data: Candidate;
   elector: any[];
+  center: string;
 }) {
   const { term } = useSearchCandidate();
   const imagesData = images.find((image) => image.numero === data.numero);
@@ -100,7 +102,7 @@ export default function CandidateCard({
             {data.nom}
           </span>
         </div>
-        <ConfirmButton data={data} elector={elector} />
+        <ConfirmButton center={center} data={data} elector={elector} />
       </DialogContent>
     </Dialog>
   ) : null;

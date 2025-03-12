@@ -2,42 +2,58 @@ import InteractiveButtons from "@/components/manager-ui/interactive-buttons";
 import Navigation from "@/components/navigation";
 import DialogRedirectMsg from "@/components/RedirectMsgDialog";
 import { signOut } from "@/lib/actions";
+import { getCenterByName } from "@/lib/supabase/center";
 import { connectManager } from "@/lib/supabase/utils";
 import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import ceniLogo from "../../../public/ceni-logo.png";
+import { redirect } from "next/navigation";
+import ceniLogo from "../../../../public/ceni-logo.png";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function Home({
   searchParams,
+  params,
 }: {
   searchParams: SearchParams;
+  params: { slug: string };
 }) {
   await connectManager();
+  const data = await getCenterByName(params.slug);
+
+  if (!data) {
+    redirect("/center/signin");
+  }
+
+  const center = {
+    nom: data.nom,
+    province: data.province,
+    ville: data.ville,
+    commune: data.localite,
+    quartier: data.avenue,
+    avenue: data.avenue,
+  };
 
   const sessionEnd = Boolean((await searchParams).sessionEnd);
-
-  const localisation = {
-    province: "Haut Katanga",
-    ville: "Lubumbashi",
-    commune: "Kampemba",
-    quartier: "Bel-air",
-    avenue: "Fungurumé",
-  };
 
   const renderLocalisation = () => {
     return (
       <ul className="flex gap-1 w-full justify-center flex-wrap">
-        {Object.entries(localisation).map(([key, value], idx) => (
-          <li key={key} className="flex items-center gap-1">
-            <span className="text-nowrap">{value}</span>
-            {idx != Object.entries(localisation).length - 1 && (
-              <Play className="fill-slate-950 text-slate-950 w-3 h-3" />
-            )}
-          </li>
-        ))}
+        {center &&
+          Object.entries(center).map(([key, value], idx) => {
+            const ignoreKeys = ["id", "total_electeurs", "total_votes"];
+            if (ignoreKeys.includes(key) || !value) return;
+
+            return (
+              <li key={key} className="flex items-center gap-1">
+                <span className="text-nowrap">{value}</span>
+                {idx != Object.entries(center).length - 1 && (
+                  <Play className="fill-slate-950 text-slate-950 w-3 h-3" />
+                )}
+              </li>
+            );
+          })}
       </ul>
     );
   };
@@ -45,7 +61,7 @@ export default async function Home({
   return (
     <>
       <DialogRedirectMsg open={sessionEnd} />
-      <Navigation hiddenTimer />
+      <Navigation centerName={center.nom} hiddenTimer />
       <div className="min-h-screen lg:max-h-screen lg:overflow-hidden flex flex-col py-16">
         <div className="flex items-center flex-col">
           <div className="py-4 bg-gray-200 px-8 w-full uppercase text-cblue-light space-y-4 font-semibold">
@@ -78,7 +94,7 @@ export default async function Home({
           </div>
 
           <div className="pt-20 px-8 flex flex-col items-center justify-center lg:basis-1/2">
-            <InteractiveButtons />
+            <InteractiveButtons slug={center.nom} />
             <Link
               href="/result"
               target="_blank"

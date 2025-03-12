@@ -1,24 +1,26 @@
 "use client";
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "./ui/button";
-import React from "react";
-import { useRouter } from "next/navigation";
-import { vote } from "@/lib/supabase/utils";
 import { Candidate } from "@/constants";
+import { vote } from "@/lib/supabase/utils";
 import {
   DialogClose,
   DialogDescription,
   DialogTitle,
 } from "@radix-ui/react-dialog";
 import { LoaderCircle, ThumbsUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { Button } from "./ui/button";
 
 export default function ConfirmButton({
   data,
   elector,
+  center,
 }: {
   data: Candidate;
   elector: any;
+  center: string;
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -61,7 +63,7 @@ export default function ConfirmButton({
             pour votre participation.
           </DialogDescription>
           <Button
-            onClick={() => router.replace("/center/identification")}
+            onClick={() => router.replace(`/center/${center}/identification`)}
             className="bg-cblue font-semibold w-full h-10 lg:h-12 lg:text-xl hover:bg-cblue-light transition-all duration-300"
           >
             Continuer
