@@ -1,8 +1,8 @@
-import { Metadata } from "next";
 import { UserAuthForm } from "@/app/center/components/user-auth-form";
 import DateTime from "@/components/date-time";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Portail centre | Connexion",
