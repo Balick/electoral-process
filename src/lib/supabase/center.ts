@@ -1,6 +1,7 @@
 "use server";
 
 import { Center } from "@/app/admin/dashboard/centres/_components/columns";
+import { User } from "@/constants";
 import { createClient } from "@/lib/supabase/server";
 
 // getCenters function to get all centers from the centers table
@@ -73,7 +74,43 @@ export async function getManager(id_center: string) {
   return data;
 }
 
+export async function getUser(id_user: string): Promise<User | null> {
+  const supabase = createClient();
+
+  const { data, error: errorUser } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", id_user)
+    .single();
+
+  if (errorUser) {
+    console.error(
+      `❌   Erreur lors de la récupération de l'utilisateur ${id_user} : `,
+      errorUser.message
+    );
+  }
+
+  return data;
+}
+
 export async function getManagers() {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("role", "manager");
+
+  if (error) {
+    console.error(
+      `❌   Erreur lors de la récupération des managers : `,
+      error.message
+    );
+  }
+
+  return data;
+}
+
+export async function getUsers() {
   const supabase = createClient();
   const { data, error } = await supabase.from("users").select("*");
 

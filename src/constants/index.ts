@@ -1,3 +1,14 @@
+export type Role = "manager" | "admin" | "president";
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+  center_id: string | null;
+};
+
 export type Candidate = {
   id: string;
   nom: string;
