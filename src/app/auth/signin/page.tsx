@@ -15,7 +15,7 @@ export default async function AuthenticationPage() {
   const { data, error } = await supabase.auth.getUser();
 
   if (error) {
-    console.error(error.message);
+    console.error("erroe : ", error);
   }
 
   // if there is an error, redirect to the error page
