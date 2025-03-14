@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCandidates, getElectors } from "./candidate";
 
 // Fonction getVoterById pour obtenir un électeur ou un candidat par identifiant
 // Paramètre : id (string) est l'identifiant de l'électeur ou du candidat
@@ -175,4 +176,21 @@ export async function vote(
 
   console.log("✨ Vote enregistré avec succès");
   return true;
+}
+
+export async function similateVoteProcess() {
+  const electors = await getElectors();
+  const candidates = await getCandidates();
+  let electorsWithCandidates = [];
+
+  if (!electors && !candidates) {
+    console.error("Aucun électeur ou candidat trouvé");
+    return;
+  } else if (electors && candidates) {
+    electorsWithCandidates = Array.from(electors).concat(
+      Array.from(candidates)
+    );
+  }
+
+  console.log(electorsWithCandidates);
 }

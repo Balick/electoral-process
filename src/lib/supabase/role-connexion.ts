@@ -10,7 +10,7 @@ export async function connectManager() {
   const { data: UserAuth, error } = await supabase.auth.getUser();
 
   if (error || !UserAuth?.user) {
-    redirect("/center/signin");
+    redirect("/auth/signin");
   }
 
   const { data: user } = await supabase
@@ -21,7 +21,7 @@ export async function connectManager() {
 
   // if the user is not a manager, log out and redirect to the signin page
   if (user.role !== "manager") {
-    await signOut().then(() => redirect("/center/signin"));
+    await signOut().then(() => redirect("/auth/signin"));
   }
 
   return user;
@@ -33,7 +33,7 @@ export async function connectAdmin() {
   const { data: UserAuth, error } = await supabase.auth.getUser();
 
   if (error || !UserAuth?.user) {
-    redirect("/admin/signin");
+    redirect("/auth/signin");
   }
 
   const { data: user } = await supabase
@@ -44,7 +44,29 @@ export async function connectAdmin() {
 
   // if the user is not an admin, log out and redirect to the signin page
   if (user.role !== "admin") {
-    await signOut().then(() => redirect("/admin/signin"));
+    await signOut().then(() => redirect("/auth/signin"));
+  }
+
+  return user;
+}
+
+export async function connectPresident() {
+  const supabase = createClient();
+  const { data: UserAuth, error } = await supabase.auth.getUser();
+
+  if (error || !UserAuth?.user) {
+    redirect("/auth/signin");
+  }
+
+  const { data: user } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", UserAuth.user.email)
+    .single();
+
+  // if the user is not an admin, log out and redirect to the signin page
+  if (user.role !== "president") {
+    await signOut().then(() => redirect("/auth/signin"));
   }
 
   return user;

@@ -14,7 +14,7 @@ export default function LogOut() {
     e.preventDefault();
     setIsSubmitting(true);
     await signOut();
-    router.replace("/admin/signin");
+    router.replace("/auth/signin");
   };
 
   return (

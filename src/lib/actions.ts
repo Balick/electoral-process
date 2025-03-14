@@ -2,18 +2,18 @@
 
 import { redirect } from "next/navigation";
 
+import { Role } from "@/constants";
 import adminClient from "@/lib/supabase/adminClient";
 import { createClient } from "@/lib/supabase/server";
-import { Role } from "@/constants";
 
 type LoginData = {
   email: string;
   password: string;
-  target: string;
+  //target: string;
 };
 
 // login function to log in user
-export async function login({ email, password, target }: LoginData) {
+/*export async function login({ email, password, target }: LoginData) {
   const supabase = createClient();
   const data = { email, password };
   let errorMessage = "Erreur lors de la connexion.";
@@ -67,6 +67,55 @@ export async function login({ email, password, target }: LoginData) {
 
     redirect(`/${target}/${center.nom}`);
   }
+}*/
+
+export async function login({ email, password }: LoginData) {
+  const supabase = createClient();
+  const data = { email, password };
+  let errorMessage = "Erreur lors de la connexion.";
+
+  const { error } = await supabase.auth.signInWithPassword(data);
+
+  if (error) {
+    console.error(error.message);
+
+    if (error.message === "Invalid login credentials")
+      errorMessage = "Vos identifiants sont incorrects.";
+
+    return errorMessage;
+  }
+
+  // verify if user is a manager or an admin
+  const { data: user, error: userError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  if (userError) {
+    await signOut();
+    errorMessage = "Erreur lors de la connexion.";
+    return errorMessage;
+  }
+
+  const role = user.role;
+
+  if (role === "admin") redirect(`/admin`);
+  else if (role === "president") redirect(`/president`);
+
+  const { data: center, error: centerError } = await supabase
+    .from("centres")
+    .select("*")
+    .eq("id", user.center_id)
+    .single();
+
+  if (centerError) {
+    await signOut();
+    errorMessage = "Vous n'êtes assigné à aucun centre.";
+    return errorMessage;
+  }
+
+  redirect(`/center/${center.nom}`);
 }
 
 // signOut function to log out user

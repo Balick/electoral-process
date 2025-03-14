@@ -1,5 +1,6 @@
 import { DateTimeForm } from "@/app/admin/dashboard/_components/datetime-form";
 
+//import { similateVoteProcess } from "@/lib/supabase/voting";
 import { Hourglass } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import VotingCenters from "./_components/voting-centers";
 import WhiteVotes from "./_components/white-votes";
 
 export default async function Page() {
+  //await similateVoteProcess();
   return (
     <div>
       <div className="flex gap-4 justify-between items-center flex-wrap">

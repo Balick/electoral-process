@@ -13,7 +13,6 @@ import { login } from "@/lib/actions";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,32 +22,27 @@ const formSchema = z.object({
     .string()
     .email({ message: "Veuillez entrer une adresse email valide" }),
   password: z.string().min(1, { message: "Veuillez entrer un mot de passe" }),
-  target: z.string(),
+  target: z.string().optional(),
 });
 
 export function UserAuthForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const pathname = usePathname();
-  // target is either "center" or "admin"
-  // depending on the current page
-  // the target variable is used to determine the page to redirect to after login
-  const target = pathname === "/center/signin" ? "center" : "admin";
-
   // Define the form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
-      target: target,
+      target: "",
     },
   });
 
   // Define a submit handler
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const errorMessage = await login(data);
+    const { email, password } = data;
+    const errorMessage = await login({ email, password });
 
     if (errorMessage) {
       form.setError("target", { type: "manual", message: errorMessage });
@@ -69,6 +63,7 @@ export function UserAuthForm({
                 <FormControl>
                   <Input
                     placeholder="Votre adresse mail"
+                    type="email"
                     {...field}
                     className="bg-slate-50 border text-lg px-4 py-2 rounded-lg hover:ring-4 focus:ring-4 focus:outline-none ring-cblue-light/20"
                   />
@@ -87,6 +82,7 @@ export function UserAuthForm({
                 <FormControl>
                   <Input
                     placeholder="Votre mot de passe"
+                    type="password"
                     {...field}
                     className="bg-slate-50 border text-lg px-4 py-2 rounded-lg hover:ring-4 focus:ring-4 focus:outline-none ring-cblue-light/20"
                   />

@@ -23,7 +23,7 @@ export default async function Home({
   const data = await getCenterByName(params.slug);
 
   if (!data) {
-    redirect("/center/signin");
+    redirect("/auth/signin");
   }
 
   const center = {
