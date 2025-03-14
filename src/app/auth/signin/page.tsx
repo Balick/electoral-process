@@ -14,12 +14,12 @@ export default async function AuthenticationPage() {
 
   const { data, error } = await supabase.auth.getUser();
 
+  if (error) {
+    console.error(error.message);
+  }
+
   // if there is an error, redirect to the error page
-  if (
-    error &&
-    error.message !== "Auth session missing!" &&
-    error.message !== "Invalid refresh token"
-  ) {
+  if (error && error.message !== "Auth session missing!") {
     return <ErrorPage />;
   }
 
