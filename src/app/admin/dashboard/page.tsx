@@ -1,19 +1,17 @@
 import { DateTimeForm } from "@/app/admin/dashboard/_components/datetime-form";
-
-//import { similateVoteProcess } from "@/lib/supabase/voting";
 import { Hourglass } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import ceniLogo from "../../../../public/ceni-logo.png";
 import LogOut from "./_components/log-out";
 import ResetBtn from "./_components/reset-btn";
+import SimulateVote from "./_components/similateVote";
 import Timer from "./_components/timer";
 import TotalVoters from "./_components/total-voters";
 import VotingCenters from "./_components/voting-centers";
 import WhiteVotes from "./_components/white-votes";
 
 export default async function Page() {
-  //await similateVoteProcess();
   return (
     <div>
       <div className="flex gap-4 justify-between items-center flex-wrap">
@@ -21,9 +19,7 @@ export default async function Page() {
           Vue d&apos;ensemble
         </h1>
         <div className="flex gap-2 items-center flex-wrap flex-row-reverse">
-          <button className="hidden bg-cblue hover:bg-cblue-light text-white hover:text-black transition-all duration-300 font-semibold px-8 text-nowrap w-max py-2 rounded-lg">
-            Générer le rapport
-          </button>
+          <SimulateVote />
           <ResetBtn />
           <LogOut />
         </div>

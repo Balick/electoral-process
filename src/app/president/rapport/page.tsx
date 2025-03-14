@@ -1,9 +1,9 @@
 import LogOut from "@/app/admin/dashboard/_components/log-out";
-import ResetBtn from "@/app/admin/dashboard/_components/reset-btn";
+import GenerateBtn from "../_components/generateBtn";
 
 export default async function Page() {
   return (
-    <div>
+    <div className="relative">
       <div className="flex gap-4 justify-between items-center flex-wrap">
         <h1 className="text-xl lg:text-2xl font-semibold uppercase">
           Rapport des elections
@@ -12,7 +12,7 @@ export default async function Page() {
           <button className="hidden bg-cblue hover:bg-cblue-light text-white hover:text-black transition-all duration-300 font-semibold px-8 text-nowrap w-max py-2 rounded-lg">
             Générer le rapport
           </button>
-          <ResetBtn />
+          <GenerateBtn />
           <LogOut />
         </div>
       </div>

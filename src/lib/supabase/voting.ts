@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCandidates, getElectors } from "./candidate";
+import { getCenters } from "./center";
 
 // Fonction getVoterById pour obtenir un électeur ou un candidat par identifiant
 // Paramètre : id (string) est l'identifiant de l'électeur ou du candidat
@@ -179,18 +180,94 @@ export async function vote(
 }
 
 export async function similateVoteProcess() {
+  const operations = [0, 1]; // 0 : blank vote, 1 : vote
   const electors = await getElectors();
   const candidates = await getCandidates();
   let electorsWithCandidates = [];
+  let finalElectorsData: {
+    id: any;
+    identifiant: any;
+    id_centre: any;
+    a_vote: any;
+    date_vote: any;
+    id_candidat: any;
+    nom: any;
+  }[] = [];
 
   if (!electors && !candidates) {
     console.error("Aucun électeur ou candidat trouvé");
     return;
   } else if (electors && candidates) {
-    electorsWithCandidates = Array.from(electors).concat(
-      Array.from(candidates)
+    electorsWithCandidates = Array.from(candidates).concat(
+      Array.from(electors)
     );
+    finalElectorsData = electorsWithCandidates.map((elector) => {
+      return {
+        id: elector.id,
+        identifiant: elector.identifiant,
+        id_centre: elector.id_centre,
+        a_vote: elector.a_vote,
+        date_vote: elector.date_vote,
+        id_candidat: elector.id_candidat,
+        nom: elector.nom,
+      };
+    });
   }
 
-  console.log(electorsWithCandidates);
+  if (!candidates) return;
+  const idCandidateList = candidates.map((elector) => elector.id_candidat);
+
+  for (const elector of finalElectorsData) {
+    const id_centre = elector.id_centre;
+    const id_elector = elector.id;
+    const id_candidat =
+      idCandidateList[Math.floor(Math.random() * idCandidateList.length)];
+    const operation = Math.floor(Math.random() * operations.length);
+
+    if (operation === 0) {
+      await blankVote(id_elector);
+    } else {
+      await vote(id_candidat, id_centre, id_elector);
+    }
+  }
+}
+
+export async function changeVotersCenter() {
+  const supabase = createClient();
+  const centers = await getCenters();
+  const electors = await getElectors();
+  const candidates = await getCandidates();
+
+  if (!electors && !candidates) {
+    console.error("Aucun électeur ou candidat trouvé");
+    return;
+  }
+
+  const idCentersList = centers.map((center) => center.id);
+
+  if (electors) {
+    for (const elector of electors) {
+      const id_elector = elector.id;
+      const id_centre =
+        idCentersList[Math.floor(Math.random() * idCentersList.length)];
+
+      await supabase
+        .from("electeurs")
+        .update({ id_centre: id_centre })
+        .eq("id", id_elector);
+    }
+  }
+
+  if (candidates) {
+    for (const candidate of candidates) {
+      const id_candidate = candidate.id;
+      const id_centre =
+        idCentersList[Math.floor(Math.random() * idCentersList.length)];
+
+      await supabase
+        .from("candidates")
+        .update({ id_centre: id_centre })
+        .eq("id", id_candidate);
+    }
+  }
 }

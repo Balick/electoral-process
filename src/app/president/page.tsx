@@ -17,9 +17,6 @@ export default async function Page() {
           Vue d&apos;ensemble
         </h1>
         <div className="flex gap-2 items-center flex-wrap flex-row-reverse">
-          <button className="hidden bg-cblue hover:bg-cblue-light text-white hover:text-black transition-all duration-300 font-semibold px-8 text-nowrap w-max py-2 rounded-lg">
-            Générer le rapport
-          </button>
           <LogOut />
         </div>
       </div>
