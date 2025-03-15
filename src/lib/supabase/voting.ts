@@ -179,56 +179,59 @@ export async function vote(
   return true;
 }
 
+// Enumération pour les types de vote
+enum VoteType {
+  BLANK = "BLANK",
+  CANDIDATE = "CANDIDATE",
+}
+
 export async function similateVoteProcess() {
-  const operations = [0, 1]; // 0 : blank vote, 1 : vote
-  const electors = await getElectors();
-  const candidates = await getCandidates();
-  let electorsWithCandidates = [];
-  let finalElectorsData: {
-    id: any;
-    identifiant: any;
-    id_centre: any;
-    a_vote: any;
-    date_vote: any;
-    id_candidat: any;
-    nom: any;
-  }[] = [];
+  // Correction du nom de la fonction
+  try {
+    const [electors, candidates] = await Promise.all([
+      getElectors(),
+      getCandidates(),
+    ]);
 
-  if (!electors && !candidates) {
-    console.error("Aucun électeur ou candidat trouvé");
-    return;
-  } else if (electors && candidates) {
-    electorsWithCandidates = Array.from(candidates).concat(
-      Array.from(electors)
-    );
-    finalElectorsData = electorsWithCandidates.map((elector) => {
-      return {
-        id: elector.id,
-        identifiant: elector.identifiant,
-        id_centre: elector.id_centre,
-        a_vote: elector.a_vote,
-        date_vote: elector.date_vote,
-        id_candidat: elector.id_candidat,
-        nom: elector.nom,
-      };
-    });
-  }
-
-  if (!candidates) return;
-  const idCandidateList = candidates.map((elector) => elector.id_candidat);
-
-  for (const elector of finalElectorsData) {
-    const id_centre = elector.id_centre;
-    const id_elector = elector.id;
-    const id_candidat =
-      idCandidateList[Math.floor(Math.random() * idCandidateList.length)];
-    const operation = Math.floor(Math.random() * operations.length);
-
-    if (operation === 0) {
-      await blankVote(id_elector);
-    } else {
-      await vote(id_candidat, id_centre, id_elector);
+    // Validation des données
+    if (!electors?.length || !candidates?.length) {
+      throw new Error("Électeurs ou candidats manquants");
     }
+
+    // Filtrage des électeurs n'ayant pas encore voté
+    const nonVotingElectors = electors.filter((elector) => !elector.a_vote);
+
+    // Configuration des probabilités de vote (exemple : 10% de votes blancs)
+    const VOTE_PROBABILITIES = {
+      [VoteType.BLANK]: 0.1,
+      [VoteType.CANDIDATE]: 0.9,
+    };
+
+    for (const elector of nonVotingElectors) {
+      // Simulation aléatoire du type de vote
+      const voteDecision = Math.random();
+      const hasVotedBlank = voteDecision < VOTE_PROBABILITIES[VoteType.BLANK];
+
+      if (hasVotedBlank) {
+        await blankVote(elector.identifiant);
+      } else {
+        // Sélection aléatoire d'un candidat valide
+        const randomCandidate =
+          candidates[Math.floor(Math.random() * candidates.length)];
+
+        if (!randomCandidate) {
+          console.error("Aucun candidat disponible");
+          continue;
+        }
+
+        await vote(randomCandidate.id, elector.id_centre, elector.id);
+      }
+    }
+
+    console.log("Simulation terminée avec succès");
+  } catch (error) {
+    console.error("Erreur lors de la simulation:", error);
+    throw error;
   }
 }
 
