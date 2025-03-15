@@ -114,8 +114,8 @@ export default function IdentificationForm({
                   {error}
                 </span>
                 Veuillez saisir le numéro d&apos;identification de votre carte
-                d&apos;électeur. <br /> Vous pouvez trouver votre carte au coin
-                droit de votre carte d&apos;électeur comme sur la photo
+                d&apos;électeur. <br /> Vous pouvez trouver votre identifiant au
+                coin droit de votre carte d&apos;électeur comme sur la photo
                 présente.
               </FormDescription>
               <FormMessage />

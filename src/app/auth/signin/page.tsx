@@ -2,7 +2,9 @@ import DateTime from "@/components/date-time";
 import { signOut } from "@/lib/actions";
 import { createClient } from "@/lib/supabase/server";
 import { Metadata } from "next";
+import Image from "next/image";
 import { redirect } from "next/navigation";
+import ceniLogo from "../../../../public/ceni-logo.png";
 import { UserAuthForm } from "./userAuthForm";
 
 export const metadata: Metadata = {
@@ -49,10 +51,15 @@ export default async function AuthenticationPage() {
   return (
     <div className="container mx-auto relative flex min-h-screen flex-col items-center justify-center">
       <PageHeader />
+      <Image
+        src={ceniLogo}
+        alt="Logo de la CENI"
+        className="w-[45rem] h-[30rem] mb-8 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-5"
+      />
 
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 max-w-[30rem] px-4 sm:px-8">
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 max-w-[30rem] px-4 sm:px-8 relative z-20">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight text-black">
             Veuillez vous identifier
           </h1>
           <p className="text-lg text-muted-foreground">
@@ -67,7 +74,7 @@ export default async function AuthenticationPage() {
 
 function ErrorPage() {
   return (
-    <div className="container mx-auto relative flex min-h-screen flex-col items-center justify-center">
+    <div className="z-20 container mx-auto relative flex min-h-screen flex-col items-center justify-center">
       <PageHeader />
 
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 max-w-[30rem] px-4 sm:px-8">

@@ -115,7 +115,7 @@ export default function SuccessPage() {
       supabase.removeChannel(candidatesSubscription);
       supabase.removeChannel(sessionSubscription);
     };
-  }, [supabase, isSessionEnded]);
+  }, [supabase]);
 
   return (
     <>
@@ -133,28 +133,18 @@ export default function SuccessPage() {
       </header>
 
       <main className="min-h-screen lg:max-h-screen lg:overflow-hidden flex flex-col lg:flex-row items-center pt-20 px-8 bg-gray-100">
-        {!isSessionEnded && (
-          <section className="lg:w-[30%] flex-none flex flex-col items-center justify-center gap-2">
-            <Clock
-              className={cn(
-                "w-16 h-16",
-                !isSessionEnded && "animate-spin-slow"
-              )}
-            />
-            <p className="font-semibold text-lg uppercase flex flex-col items-center">
-              Il reste <Timer />
-            </p>
-          </section>
-        )}
+        <section className="lg:w-[30%] flex-none flex flex-col items-center justify-center gap-2">
+          <Clock
+            className={cn("w-16 h-16", !isSessionEnded && "animate-spin-slow")}
+          />
+          <p className="font-semibold text-lg uppercase flex flex-col items-center">
+            Il reste <Timer />
+          </p>
+        </section>
 
-        <section
-          className={clsx(
-            "space-y-4 w-full",
-            isSessionEnded && "container mx-auto lg:px-20 xl:px-40"
-          )}
-        >
+        <section className="space-y-4 w-full">
           <h2 className="uppercase font-semibold text-xl">
-            Résultats en temps réel en temps réel
+            Résultats en temps réel
           </h2>
           {candidates
             .sort((a, b) => b.total_votes - a.total_votes)

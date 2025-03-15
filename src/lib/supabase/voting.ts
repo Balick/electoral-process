@@ -2,7 +2,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCandidates, getElectors } from "./candidate";
-import { getCenters } from "./center";
 
 // Fonction getVoterById pour obtenir un électeur ou un candidat par identifiant
 // Paramètre : id (string) est l'identifiant de l'électeur ou du candidat
@@ -79,9 +78,9 @@ export async function vote(
 
   // Déterminer si le votant est un électeur ou un candidat
   let tableVotant: string;
-  const { data: electeurData, error: electeurError } = await supabase
+  const { data: elector, error: electeurError } = await supabase
     .from("electeurs")
-    .select("id")
+    .select("*")
     .eq("id", id_elector)
     .maybeSingle();
 
@@ -90,10 +89,10 @@ export async function vote(
     return false;
   }
 
-  if (electeurData) {
+  if (elector) {
     tableVotant = "electeurs";
   } else {
-    const { data: candidatData, error: candidatError } = await supabase
+    const { data: candidate, error: candidatError } = await supabase
       .from("candidates")
       .select("id")
       .eq("id", id_elector)
@@ -104,7 +103,7 @@ export async function vote(
       return false;
     }
 
-    if (candidatData) {
+    if (candidate) {
       tableVotant = "candidates";
     } else {
       console.error("❌ Votant non trouvé dans electeurs ou candidates");
@@ -131,6 +130,7 @@ export async function vote(
   const { data: dataCentre, error: erreurCentre } = await supabase
     .from("centres")
     .select("total_votes")
+    .eq("id", id_centre)
     .single();
 
   if (erreurCentre) {
@@ -232,42 +232,94 @@ export async function similateVoteProcess() {
   }
 }
 
-export async function changeVotersCenter() {
+/*export async function changeVotersCenter() {
   const supabase = createClient();
   const centers = await getCenters();
   const electors = await getElectors();
   const candidates = await getCandidates();
 
   if (!electors && !candidates) {
-    console.error("Aucun électeur ou candidat trouvé");
+    console.log(
+      "Aucun électeur ni candidat trouvé. Aucune modification effectuée."
+    );
     return;
   }
 
   const idCentersList = centers.map((center) => center.id);
+  const centerCounts = {}; // Objet pour stocker le nombre d'électeurs/candidats par centre
 
+  // Mise à jour des électeurs
   if (electors) {
     for (const elector of electors) {
-      const id_elector = elector.id;
-      const id_centre =
+      const idCentre =
         idCentersList[Math.floor(Math.random() * idCentersList.length)];
-
-      await supabase
+      const { error } = await supabase
         .from("electeurs")
-        .update({ id_centre: id_centre })
-        .eq("id", id_elector);
+        .update({ id_centre: idCentre })
+        .eq("id", elector.id);
+      if (error) {
+        console.error(
+          "Erreur lors de la mise à jour de l'électeur :",
+          elector.id,
+          error.message
+        );
+        continue; // Continuer même en cas d'erreur pour les autres électeurs
+      }
+      centerCounts[idCentre] = (centerCounts[idCentre] || 0) + 1;
     }
   }
 
+  // Mise à jour des candidats
   if (candidates) {
     for (const candidate of candidates) {
-      const id_candidate = candidate.id;
-      const id_centre =
+      const idCentre =
         idCentersList[Math.floor(Math.random() * idCentersList.length)];
-
-      await supabase
+      const { error } = await supabase
         .from("candidates")
-        .update({ id_centre: id_centre })
-        .eq("id", id_candidate);
+        .update({ id_centre: idCentre })
+        .eq("id", candidate.id);
+      if (error) {
+        console.error(
+          "Erreur lors de la mise à jour du candidat :",
+          candidate.id,
+          error.message
+        );
+        continue; // Continuer même en cas d'erreur pour les autres candidats
+      }
+      centerCounts[idCentre] = (centerCounts[idCentre] || 0) + 1;
     }
   }
+
+  // Mise à jour du total_electeurs pour chaque centre
+  for (const idCentre in centerCounts) {
+    const count = centerCounts[idCentre];
+    const { data: centreData, error: errorCentre } = await supabase
+      .from("centres")
+      .select("total_electeurs")
+      .eq("id", idCentre)
+      .single();
+
+    if (errorCentre) {
+      console.error("❌ Erreur récupération centre : ", errorCentre.message);
+      continue;
+    }
+
+    const currentTotalElecteurs = centreData?.total_electeurs || 0;
+    const newTotalElecteurs = currentTotalElecteurs + count;
+
+    const { error: errorMajTotalElecteurs } = await supabase
+      .from("centres")
+      .update({ total_electeurs: newTotalElecteurs })
+      .eq("id", idCentre);
+
+    if (errorMajTotalElecteurs) {
+      console.error(
+        "❌ Erreur mise à jour centre : ",
+        errorMajTotalElecteurs.message
+      );
+    }
+  }
+
+  return true;
 }
+*/

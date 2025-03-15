@@ -1,8 +1,10 @@
 import { DateTimeForm } from "@/app/admin/dashboard/_components/datetime-form";
+//import { changeVotersCenter } from "@/lib/supabase/voting";
 import { Hourglass } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import ceniLogo from "../../../../public/ceni-logo.png";
+import ChangeVotersCenter from "./_components/changeVotersCenters";
 import LogOut from "./_components/log-out";
 import ResetBtn from "./_components/reset-btn";
 import SimulateVote from "./_components/similateVote";
@@ -19,6 +21,7 @@ export default async function Page() {
           Vue d&apos;ensemble
         </h1>
         <div className="flex gap-2 items-center flex-wrap flex-row-reverse">
+          <ChangeVotersCenter />
           <SimulateVote />
           <ResetBtn />
           <LogOut />

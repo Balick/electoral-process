@@ -63,6 +63,7 @@ export default function ConfirmButton({
             pour votre participation.
           </DialogDescription>
           <Button
+            //onClick={() => setIsOpen(false)}
             onClick={() => router.replace(`/center/${center}/identification`)}
             className="bg-cblue font-semibold w-full h-10 lg:h-12 lg:text-xl hover:bg-cblue-light transition-all duration-300"
           >
