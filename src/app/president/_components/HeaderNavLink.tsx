@@ -15,7 +15,7 @@ const dashboardLinks = [
   },
   {
     label: "Résultats",
-    href: "/result",
+    href: "/president/result",
   },
 ];
 

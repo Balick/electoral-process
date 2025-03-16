@@ -1,5 +1,6 @@
 import LogOut from "@/app/admin/dashboard/_components/log-out";
 import GenerateBtn from "../_components/generateBtn";
+import ReportPage from "./Report";
 
 export default async function Page() {
   return (
@@ -17,7 +18,7 @@ export default async function Page() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 mt-4"></div>
+      <ReportPage />
     </div>
   );
 }
