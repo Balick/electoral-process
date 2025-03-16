@@ -24,7 +24,8 @@ export default function CandidateCard({
   const { term } = useSearchCandidate();
   const imagesData = images.find((image) => image.numero === data.numero);
 
-  return data.nom.toLowerCase().includes(term.toLowerCase()) ? (
+  return data.nom.toLowerCase().includes(term.toLowerCase()) ||
+    data.numero === Number(term) ? (
     <Dialog>
       <DialogTrigger>
         <div className="bg-white w-max p-1">
