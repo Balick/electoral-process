@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { Clock } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 // Définition de types pour les données des candidats
@@ -140,6 +141,9 @@ export default function SuccessPage() {
           <p className="font-semibold text-lg uppercase flex flex-col items-center">
             Il reste <Timer />
           </p>
+          <Link href="/result/details" className="underline">
+            Voir les résultats détaillés
+          </Link>
         </section>
 
         <section className="space-y-4 w-full">

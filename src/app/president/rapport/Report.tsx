@@ -102,8 +102,6 @@ export default function ReportPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Rapport des Élections</h1>
-
       {data.map((centre) => {
         const electors = centre.electeurs.concat(
           centre.candidates.map((candidat) => {
