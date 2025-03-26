@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { LoadingSkeleton } from "./LoadingSkeleton";
 
 interface ElectionData {
@@ -33,7 +33,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function ReportPage() {
+const ReportPage = forwardRef<HTMLDivElement>((props, ref) => {
   const [data, setData] = useState<ElectionData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -101,7 +101,7 @@ export default function ReportPage() {
   if (loading) return <LoadingSkeleton />;
 
   return (
-    <div className="container mx-auto p-4">
+    <div ref={ref} className="container mx-auto p-4">
       {data.map((centre) => {
         const electors = centre.electeurs.concat(
           centre.candidates.map((candidat) => {
@@ -201,4 +201,8 @@ export default function ReportPage() {
       })}
     </div>
   );
-}
+});
+
+ReportPage.displayName = "ReportPage";
+
+export default ReportPage;

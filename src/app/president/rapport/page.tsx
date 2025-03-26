@@ -1,8 +1,15 @@
+"use client";
+
 import LogOut from "@/app/admin/dashboard/_components/log-out";
-import GenerateBtn from "../_components/generateBtn";
+import { Button } from "@/components/ui/button";
+import { useRef } from "react";
+import { useReactToPrint } from "react-to-print";
 import ReportPage from "./Report";
 
-export default async function Page() {
+export default function Page() {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
+
   return (
     <div className="relative">
       <div className="flex gap-4 justify-between items-center flex-wrap">
@@ -10,15 +17,17 @@ export default async function Page() {
           Rapport des elections
         </h1>
         <div className="flex gap-2 items-center flex-wrap flex-row-reverse">
-          <button className="hidden bg-cblue hover:bg-cblue-light text-white hover:text-black transition-all duration-300 font-semibold px-8 text-nowrap w-max py-2 rounded-lg">
-            Générer le rapport
-          </button>
-          <GenerateBtn />
+          <Button
+            onClick={() => reactToPrintFn()}
+            className="bg-cblue hover:bg-cblue/80 transition-all duration-300 font-semibold px-8 text-nowrap w-max py-2 rounded-lg"
+          >
+            Publier le rapport
+          </Button>
           <LogOut />
         </div>
       </div>
 
-      <ReportPage />
+      <ReportPage ref={contentRef} />
     </div>
   );
 }
